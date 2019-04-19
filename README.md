@@ -2,7 +2,7 @@
 
 A wrapper around the awesome https://github.com/natemcmaster/CommandLineUtils.
 
-[![logo](docs/logo.png)](https://jcaillon.github.io/CommandLineUtilsPlus/)
+[![logo](docs/images/logo.png)](https://jcaillon.github.io/CommandLineUtilsPlus/)
 
 Status | Info
 ------ | --------

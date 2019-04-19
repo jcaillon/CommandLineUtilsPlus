@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ============================================================= -->
+  <!-- PROJECT PROPERTIES -->
+  <!-- ============================================================= -->
+
+  <PropertyGroup Label="Custom project variables">
+    <!-- Type or assembly to produce Exe/Library -->
+    <ProjOutputType>Library</ProjOutputType>
+    <!-- The name of the assembly .dll/.exe -->
+    <ProjAssemblyName>CommandLineUtilsPlus</ProjAssemblyName>
+    <!-- major.minor.patch[.build][-pre-release-tag] -->
+    <ProjVersion>1.0.0-beta</ProjVersion>
+    <ProjFileDescription>A wrapper around the awesome natemcmaster/CommandLineUtils</ProjFileDescription>
+    <ProjCompany>Noyacode</ProjCompany>
+    <ProjAuthor>jcaillon</ProjAuthor>
+    <ProjApplicationIcon></ProjApplicationIcon>
+    <!-- https://docs.microsoft.com/en-us/dotnet/standard/frameworks -->
+    <ProjDefaultTargetFrameworks>net461;netstandard2.0</ProjDefaultTargetFrameworks>
+    <!-- ==== Package ==== -->
+    <!-- 64x64 image with transparent background to use as the icon -->
+    <ProjPackageIconPath>docs/images/logo.png</ProjPackageIconPath>
+    <ProjPackageDescription>$(ProjFileDescription)</ProjPackageDescription>
+    <!-- A space?-delimited list of tags that designates the package. -->
+    <ProjPackageTags>$(ProjAssemblyName) CommandLineUtils</ProjPackageTags>
+    <!-- ==== Extra ==== -->
+    <!-- https://spdx.org/licenses/ (column identifier) -->
+    <ProjLicence>GPL-3.0-or-later</ProjLicence>
+    <ProjProductVersion>$(ProjVersion)</ProjProductVersion>
+    <ProjProductName>$(ProjAssemblyName)</ProjProductName>
+    <ProjRepositoryName>$(ProjAssemblyName)</ProjRepositoryName>
+    <ProjRepositoryOwner>$(ProjAuthor)</ProjRepositoryOwner>
+    <ProjRootNamespace>$(ProjRepositoryName)</ProjRootNamespace>
+    <ProjCopyright>Copyright (c) $([System.DateTime]::Now.ToString(yyyy)) - $(ProjAuthor)</ProjCopyright>
+  </PropertyGroup>
+
+  <!-- Common properties -->
+  <Import Project="Properties.common.target" />
+
+  <!-- ============================================================= -->
+  <!-- PROJECT SPECIFIC -->
+  <!-- ============================================================= -->
+
+  <PropertyGroup>
+    <!-- add xtra nuget sources -->
+    <RestoreSources>$(RestoreSources);https://www.myget.org/F/natemcmaster/api/v3/index.json;https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</RestoreSources>
+    <!-- https://docs.microsoft.com/en-us/dotnet/core/rid-catalog -->
+    <RuntimeIdentifiers>win-x64;win-x86;linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup Label="PackageReferences">
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
+    <!-- <PackageReference Include="Noyacode.GithubUpdater" Version="1.1.*" /> -->
+  </ItemGroup>
+
+</Project>
