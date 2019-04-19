@@ -21,13 +21,13 @@
     <ProjPackageIconPath>docs/images/logo.png</ProjPackageIconPath>
     <ProjPackageDescription>$(ProjFileDescription)</ProjPackageDescription>
     <!-- A space?-delimited list of tags that designates the package. -->
-    <ProjPackageTags>$(ProjAssemblyName) update updater github releases release api software install installation</ProjPackageTags>
+    <ProjPackageTags>$(ProjAssemblyName) demo app</ProjPackageTags>
     <!-- ==== Extra ==== -->
     <!-- https://spdx.org/licenses/ (column identifier) -->
     <ProjLicence>GPL-3.0-or-later</ProjLicence>
     <ProjProductVersion>$(ProjVersion)</ProjProductVersion>
     <ProjProductName>$(ProjAssemblyName)</ProjProductName>
-    <ProjRepositoryName>Oetools.Sakoe</ProjRepositoryName>
+    <ProjRepositoryName>CommandLineUtilsPlus</ProjRepositoryName>
     <ProjRepositoryOwner>$(ProjAuthor)</ProjRepositoryOwner>
     <ProjRootNamespace>$(ProjRepositoryName)</ProjRootNamespace>
     <ProjCopyright>Copyright (c) $([System.DateTime]::Now.ToString(yyyy)) - $(ProjAuthor)</ProjCopyright>
@@ -43,6 +43,21 @@
   <ItemGroup Label="ProjectReferences">
     <ProjectReference Include="..\CommandLineUtilsPlus\CommandLineUtilsPlus.csproj" />
   </ItemGroup>
+
+  <Choose>
+    <When Condition=" $(IsNetStandard) ">
+      <ItemGroup Label="PackageReferences">
+        <!-- <PackageReference Include="ILLink.Tasks" Version="0.1.5-preview-1841731" /> -->
+        <!-- https://github.com/ericstj/Microsoft.Packaging.Tools.Trimming -->
+        <PackageReference Include="Microsoft.Packaging.Tools.Trimming" Version="1.1.0-preview1-26619-01" />
+      </ItemGroup>
+      <ItemGroup>
+        <!-- adds invariant runtime option in app.runtimeconfig.json -->
+        <!-- https://github.com/dotnet/corefx/blob/master/Documentation/architecture/globalization-invariant-mode.md -->
+        <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+      </ItemGroup>
+    </When>
+  </Choose>
 
   <!-- Extra targets -->
   <Import Project="Target.*.target" />

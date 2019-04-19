@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- ============================================================= -->
   <!-- PROJECT PROPERTIES -->
@@ -43,14 +43,14 @@
 
   <PropertyGroup>
     <!-- add xtra nuget sources -->
-    <RestoreSources>$(RestoreSources);https://www.myget.org/F/natemcmaster/api/v3/index.json;https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</RestoreSources>
-    <!-- https://docs.microsoft.com/en-us/dotnet/core/rid-catalog -->
-    <RuntimeIdentifiers>win-x64;win-x86;linux-x64</RuntimeIdentifiers>
+    <!--<RestoreSources>$(RestoreSources);https://www.myget.org/F/natemcmaster/api/v3/index.json;https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</RestoreSources>-->
   </PropertyGroup>
 
   <ItemGroup Label="PackageReferences">
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
-    <!-- <PackageReference Include="Noyacode.GithubUpdater" Version="1.1.*" /> -->
   </ItemGroup>
+
+  <!-- Extra targets -->
+  <Import Project="Target.*.target" />
 
 </Project>

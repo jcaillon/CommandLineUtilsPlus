@@ -376,4 +376,6 @@ _ReSharper*
 ## END OF CORE LIST
 #####################################################################
 
-GithubUpdater/Resources/SimpleFileUpdater*
+*.dll
+*.pdb
+/CommandLineUtilsPlus/Resources/Dependencies
