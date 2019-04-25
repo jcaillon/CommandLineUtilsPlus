@@ -32,7 +32,7 @@ namespace CommandLineUtilsPlus.Command {
         /// <summary>
         /// A logger.
         /// </summary>
-        protected ILogger Log { get; private set; }
+        protected IConsoleLogger Log { get; private set; }
 
         /// <summary>
         /// Write to console.
@@ -42,13 +42,13 @@ namespace CommandLineUtilsPlus.Command {
         /// <summary>
         /// The console logger.
         /// </summary>
-        protected CommandLineConsoleLogger ConsoleLogger { get; private set; }
+        protected ICommandLineConsoleLogger ConsoleLogger { get; private set; }
 
         /// <summary>
         /// Sets the console logger for this command.
         /// </summary>
         /// <param name="consoleLogger"></param>
-        internal void SetConsoleLogger(CommandLineConsoleLogger consoleLogger) {
+        internal void SetConsoleLogger(ICommandLineConsoleLogger consoleLogger) {
             ConsoleLogger = consoleLogger;
             Log = consoleLogger;
             Out = consoleLogger;

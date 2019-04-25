@@ -19,14 +19,25 @@
 #endregion
 
 using System;
+using CommandLineUtilsPlus.Console.ProgressBar;
 
 namespace CommandLineUtilsPlus.Console {
 
     /// <summary>
     /// Interface for logging stuff happening in the program.
     /// </summary>
-    public interface ILogger {
+    public interface IConsoleLogger {
 
+        /// <summary>
+        /// Sets and gets the current threshold at which to start logging events.
+        /// </summary>
+        ConsoleLogThreshold LogTheshold { get; set; }
+        
+        /// <summary>
+        /// Progress bar display mode.
+        /// </summary>
+        ConsoleProgressBarDisplayMode ProgressBarDisplayMode { get; set; }
+        
         /// <summary>
         /// Log a fatal error.
         /// </summary>
@@ -72,16 +83,16 @@ namespace CommandLineUtilsPlus.Console {
         /// <summary>
         /// Returns a trace logger that allows to write debug traces. Only if debug mode is active.
         /// </summary>
-        ITraceLogger Trace { get; }
+        IConsoleTraceLogger Trace { get; }
 
         /// <summary>
-        /// Returns this <see cref="ILogger"/> if the <paramref name="condition"/> is true, null otherwise.
+        /// Returns this <see cref="IConsoleLogger"/> if the <paramref name="condition"/> is true, null otherwise.
         /// Allows to do stuff like:
         /// <code>Log?.If(true)?.Info("");</code>
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        ILogger If(bool condition);
+        IConsoleLogger If(bool condition);
 
         /// <summary>
         /// Reports a "local" progress of the program.

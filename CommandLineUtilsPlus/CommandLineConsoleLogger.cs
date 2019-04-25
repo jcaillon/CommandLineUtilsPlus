@@ -28,7 +28,7 @@ namespace CommandLineUtilsPlus {
     /// <summary>
     /// A <see cref="ConsoleLogger"/> that can also log stuff to a text log file.
     /// </summary>
-    public class CommandLineConsoleLogger : ConsoleLogger, ILogger {
+    public class CommandLineConsoleLogger : ConsoleLogger, ICommandLineConsoleLogger {
 
         /// <summary>
         /// Initializes a new instance of <see cref="CommandLineConsoleLogger"/>.
@@ -39,10 +39,10 @@ namespace CommandLineUtilsPlus {
         private string _logOutputFilePath;
 
         /// <inheritdoc />
-        public new ITraceLogger Trace => LogTheshold <= ConsoleLogThreshold.Debug ? this : null;
+        public override IConsoleTraceLogger Trace => LogTheshold <= ConsoleLogThreshold.Debug ? this : null;
 
         /// <inheritdoc />
-        public new ILogger If(bool condition) => condition ? this : null;
+        public override IConsoleLogger If(bool condition) => condition ? this : null;
 
         /// <inheritdoc />
         public override void Dispose() {
@@ -50,7 +50,7 @@ namespace CommandLineUtilsPlus {
             FlushLogToFile();
         }
 
-        /// <inheritdoc cref="ILogger.ReportProgress"/>
+        /// <inheritdoc cref="IConsoleLogger.ReportProgress"/>
         public override void ReportProgress(int max, int current, string message) {
             LogToFile(ConsoleLogThreshold.Debug, $"[{$"{(int) Math.Round((decimal) current / max * 100, 2)}%".PadLeft(4)}] {message}", null);
             base.ReportProgress(max, current, message);
@@ -70,7 +70,7 @@ namespace CommandLineUtilsPlus {
             get => _logOutputFilePath;
             set {
                 _logOutputFilePath = value;
-                if (!Utils.IsPathRooted(_logOutputFilePath)) {
+                if (!StaticUtilities.IsPathRooted(_logOutputFilePath)) {
                     _logOutputFilePath = Path.Combine(Directory.GetCurrentDirectory(), _logOutputFilePath);
                 }
                 const int maxSizeInMo = 100;

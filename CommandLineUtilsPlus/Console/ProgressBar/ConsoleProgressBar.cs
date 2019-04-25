@@ -170,7 +170,7 @@ namespace CommandLineUtilsPlus.Console.ProgressBar {
             }
 
             _stopwatch = null;
-            if (Utils.IsRuntimeWindowsPlatform) {
+            if (StaticUtilities.IsRuntimeWindowsPlatform) {
                 TaskbarProgress.SetState(TaskbarProgress.TaskbarStates.NoProgress);
             }
             return true;
@@ -224,7 +224,7 @@ namespace CommandLineUtilsPlus.Console.ProgressBar {
             // line1, progress bar
             _console.ForegroundColor = _timer == null ? (_maxTicks == _currentTick ? ForegroundColorDone : ForegroundColorUncomplete) ?? ForegroundColor : ForegroundColor;
             var progress = Math.Min(1, (double) _currentTick / _maxTicks);
-            if (Utils.IsRuntimeWindowsPlatform) {
+            if (StaticUtilities.IsRuntimeWindowsPlatform) {
                 TaskbarProgress.SetValue(progress * 100, 100);
             }
             var progressWidth = (int) Math.Round(progress * maxWidth);
@@ -292,7 +292,7 @@ namespace CommandLineUtilsPlus.Console.ProgressBar {
             _console.WriteLine();
             _console.WriteLine();
             _lastWindowWidth = _console.WindowWidth;
-            if (Utils.IsRuntimeWindowsPlatform) {
+            if (StaticUtilities.IsRuntimeWindowsPlatform) {
                 TaskbarProgress.SetState(TaskbarProgress.TaskbarStates.Normal);
             }
 

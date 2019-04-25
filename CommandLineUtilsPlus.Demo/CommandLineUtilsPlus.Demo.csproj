@@ -27,7 +27,7 @@
     <ProjLicence>GPL-3.0-or-later</ProjLicence>
     <ProjProductVersion>$(ProjVersion)</ProjProductVersion>
     <ProjProductName>$(ProjAssemblyName)</ProjProductName>
-    <ProjRepositoryName>CommandLineUtilsPlus</ProjRepositoryName>
+    <ProjRepositoryName>CommandLineUtilsPlus.Demo</ProjRepositoryName>
     <ProjRepositoryOwner>$(ProjAuthor)</ProjRepositoryOwner>
     <ProjRootNamespace>$(ProjRepositoryName)</ProjRootNamespace>
     <ProjCopyright>Copyright (c) $([System.DateTime]::Now.ToString(yyyy)) - $(ProjAuthor)</ProjCopyright>

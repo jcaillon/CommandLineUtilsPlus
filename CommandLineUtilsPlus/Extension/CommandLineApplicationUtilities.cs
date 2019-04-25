@@ -88,7 +88,8 @@ namespace CommandLineUtilsPlus.Extension {
         /// Get the command line that calls the given type.
         /// For instance, it will return "sakoe project init" if the type given is the command for init.
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="type">The type of the final command</param>
+        /// <typeparam name="T">The type of the root command</typeparam>
         /// <returns></returns>
         public static string GetFullCommandLine<T>(this Type type) where T : class {
             var sb = new StringBuilder();
@@ -106,7 +107,8 @@ namespace CommandLineUtilsPlus.Extension {
         /// <summary>
         /// Returns a "stack" of <see cref="CommandAttribute"/> to reach the given type.
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="type">The type of the final command</param>
+        /// <typeparam name="T">The type of the root command</typeparam>
         /// <returns></returns>
         public static List<CommandAttribute> GetCommandStackFromType<T>(this Type type) where T : class {
             var subCommands = Attribute.GetCustomAttributes(typeof(T), typeof(SubcommandAttribute), true).OfType<SubcommandAttribute>().ToList();

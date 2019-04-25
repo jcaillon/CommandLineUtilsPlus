@@ -27,7 +27,7 @@ namespace CommandLineUtilsPlus.Console {
     /// <summary>
     /// A console logger, which allows to log the action of a program in a console.
     /// </summary>
-    public class ConsoleLogger : ConsoleWriter, ILogger, ITraceLogger {
+    public class ConsoleLogger : ConsoleWriter, IConsoleLogger, IConsoleTraceLogger {
 
         /// <summary>
         /// Initializes a new instance of <see cref="ConsoleLogger"/>.
@@ -51,7 +51,7 @@ namespace CommandLineUtilsPlus.Console {
         public ConsoleLogThreshold LogTheshold { get; set; } = ConsoleLogThreshold.Info;
 
         /// <inheritdoc />
-        public ITraceLogger Trace => LogTheshold <= ConsoleLogThreshold.Debug ? this : null;
+        public virtual IConsoleTraceLogger Trace => LogTheshold <= ConsoleLogThreshold.Debug ? this : null;
 
         /// <summary>
         /// Progress bar display mode.
@@ -105,9 +105,9 @@ namespace CommandLineUtilsPlus.Console {
         }
 
         /// <inheritdoc />
-        public ILogger If(bool condition) => condition ? this : null;
+        public virtual IConsoleLogger If(bool condition) => condition ? this : null;
 
-        /// <inheritdoc cref="ILogger.ReportProgress"/>
+        /// <inheritdoc cref="IConsoleLogger.ReportProgress"/>
         public virtual void ReportProgress(int max, int current, string message) {
             if (ProgressBarDisplayMode == ConsoleProgressBarDisplayMode.Off) {
                 return;

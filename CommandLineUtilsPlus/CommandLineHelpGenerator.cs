@@ -34,7 +34,7 @@ namespace CommandLineUtilsPlus {
     /// <summary>
     /// A class that helps generate the usage of a command line application.
     /// </summary>
-    public class CommandLineHelpGenerator : IHelpTextGenerator, IHelpWriter {
+    public class CommandLineHelpGenerator : ICommandLineHelpGenerator {
 
         /// <summary>
         /// Initializes a new instance of <see cref="CommandLineHelpGenerator"/>.

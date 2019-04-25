@@ -78,7 +78,7 @@ namespace CommandLineUtilsPlus.Console {
 
         private static readonly ITaskbarList3 _taskbarInstance = (ITaskbarList3) new TaskbarInstance();
 
-        private static readonly bool TaskbarSupported = Utils.IsRuntimeWindowsPlatform;
+        private static readonly bool TaskbarSupported = StaticUtilities.IsRuntimeWindowsPlatform;
 
         public static void SetState(TaskbarStates taskbarState) {
             if (TaskbarSupported)

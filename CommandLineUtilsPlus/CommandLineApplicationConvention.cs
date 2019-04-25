@@ -28,13 +28,13 @@ namespace CommandLineUtilsPlus {
     /// <inheritdoc />
     public class CommandLineApplicationConvention : IConvention {
 
-        private CommandLineConsoleLogger _consoleLogger;
+        private ICommandLineConsoleLogger _consoleLogger;
 
         /// <summary>
         /// New instance of <see cref="CommandLineApplicationConvention"/>
         /// </summary>
         /// <param name="consoleLogger"></param>
-        public CommandLineApplicationConvention(CommandLineConsoleLogger consoleLogger) {
+        public CommandLineApplicationConvention(ICommandLineConsoleLogger consoleLogger) {
             _consoleLogger = consoleLogger;
         }
 

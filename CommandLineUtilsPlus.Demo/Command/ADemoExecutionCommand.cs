@@ -18,10 +18,11 @@
 // ========================================================================
 #endregion
 
+using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Console;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace CommandLineUtilsPlus.Command {
+namespace CommandLineUtilsPlus.Demo.Command {
     public class ADemoExecutionCommand : AExecutionCommand {
         protected override void DrawLogo(CommandLineApplication application, IConsoleWriter console) {
             base.DrawLogo(application, console);

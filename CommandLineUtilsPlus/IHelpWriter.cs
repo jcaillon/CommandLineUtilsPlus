@@ -1,7 +1,7 @@
 #region header
 // ========================================================================
 // Copyright (c) 2018 - Julien Caillon (julien.caillon@gmail.com)
-// This file (IHelpFormatter.cs) is part of Oetools.Sakoe.
+// This file (IHelpWriter.cs) is part of Oetools.Sakoe.
 //
 // Oetools.Sakoe is a free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

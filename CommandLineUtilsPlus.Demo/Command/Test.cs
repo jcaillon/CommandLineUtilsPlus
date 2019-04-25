@@ -21,7 +21,7 @@
 using CommandLineUtilsPlus.Command;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Oetools.Sakoe.Command {
+namespace CommandLineUtilsPlus.Demo.Command {
 
     [Command(
         "version", "vs",

@@ -17,17 +17,17 @@
 // along with Oetools.Sakoe. If not, see <http://www.gnu.org/licenses/>.
 // ========================================================================
 #endregion
+
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading;
-using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Oetools.Sakoe.Command.Oe {
+namespace CommandLineUtilsPlus.Demo.Command {
 #if DEBUG
 
     [Command(

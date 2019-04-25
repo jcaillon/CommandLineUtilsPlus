@@ -1,7 +1,7 @@
-#region header
+﻿#region header
 // ========================================================================
 // Copyright (c) 2018 - Julien Caillon (julien.caillon@gmail.com)
-// This file (ITraceLogger.cs) is part of Oetools.Sakoe.
+// This file (EntryPoint.cs) is part of Oetools.Sakoe.
 //
 // Oetools.Sakoe is a free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,26 +20,18 @@
 
 using System;
 
-namespace CommandLineUtilsPlus.Console {
+namespace CommandLineUtilsPlus.Demo {
 
     /// <summary>
-    /// Interface for logging trace/debug level stuff happening in the program.
+    /// Main method for this CLI program.
     /// </summary>
-    public interface ITraceLogger {
-
-        /// <summary>
-        /// Write the message to the debug log.
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="e"></param>
-        void Write(string message, Exception e = null);
-
-        /// <summary>
-        /// Report progress.
-        /// </summary>
-        /// <param name="max"></param>
-        /// <param name="current"></param>
-        /// <param name="message"></param>
-        void ReportProgress(int max, int current, string message);
+    /// <remarks>
+    /// We cannot reference a lib in this class if we want the assembly loader to work correctly
+    /// </remarks>
+    public static class MainProg {
+        public static int Main(string[] args) {
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyLoader.AssemblyResolver;
+            return EntryPoint.Execute(args);
+        }
     }
 }

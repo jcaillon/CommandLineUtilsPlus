@@ -45,11 +45,13 @@ namespace CommandLineUtilsPlus {
         /// The entry point for the command line application.
         /// </summary>
         /// <param name="args"></param>
+        /// <param name="logger"></param>
+        /// <param name="helper"></param>
         /// <returns></returns>
-        public static int ExecuteCommand(string[] args) {
+        public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleInterface, ICommandLineHelpGenerator> helper = null) {
             var console = new CommandLineConsoleInterface();
-            var consoleLogger = new CommandLineConsoleLogger(console);
-            var helpGenerator = new CommandLineHelpGenerator(consoleLogger);
+            ICommandLineConsoleLogger consoleLogger = logger?.Invoke(console) ?? new CommandLineConsoleLogger(console);
+            ICommandLineHelpGenerator helpGenerator = helper?.Invoke(console) ?? new CommandLineHelpGenerator(consoleLogger);
             try {
                 console.CursorVisible = false;
                 using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, Directory.GetCurrentDirectory(), true)) {

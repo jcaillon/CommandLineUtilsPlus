@@ -18,12 +18,10 @@
 // ========================================================================
 #endregion
 
-using CommandLineUtilsPlus;
 using CommandLineUtilsPlus.Command;
 using McMaster.Extensions.CommandLineUtils;
-using Oetools.Sakoe.Command.Oe;
 
-namespace Oetools.Sakoe.Command {
+namespace CommandLineUtilsPlus.Demo.Command {
 
     /// <summary>
     /// The main command of the application, called when the user passes no arguments/commands

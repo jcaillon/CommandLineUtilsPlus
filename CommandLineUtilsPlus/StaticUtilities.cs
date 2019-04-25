@@ -23,7 +23,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 namespace CommandLineUtilsPlus {
-    internal static class Utils {
+    internal static class StaticUtilities {
 
 #if !WINDOWSONLYBUILD
         private static bool? _isRuntimeWindowsPlatform;
