@@ -148,7 +148,11 @@ namespace CommandLineUtilsPlus {
                     if (opt.OptionType == CommandOptionType.MultipleValue) {
                         text = $"(Can be used multiple times) {text}";
                     }
-                    WriteOnNewLine($"| {opt.ShortName?.PadLeft(opt.ShortName.Length + 1, '-')} | {opt.LongName?.PadLeft(opt.LongName.Length + 2, '-')} | {ReplaceNewLines(text)} |");
+                    string valueName = "";
+                    if (!string.IsNullOrEmpty(opt.ValueName)) {
+                        valueName = opt.OptionType == CommandOptionType.SingleOrNoValue ? $"[:{opt.ValueName.Replace("_", " ")}]" : $" \\<{opt.ValueName.Replace("_", " ")}>";
+                    }
+                    WriteOnNewLine($"| -{opt.ShortName} | \\--{opt.LongName}{valueName} | {ReplaceNewLines(text)} |");
                 }
             }
         }
