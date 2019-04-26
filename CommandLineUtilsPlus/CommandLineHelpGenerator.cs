@@ -74,10 +74,6 @@ namespace CommandLineUtilsPlus {
             var options = application.GetOptions().Where(o => o.ShowInHelpText).ToList();
             var commands = application.Commands.Where(c => c.ShowInHelpText).ToList();
 
-            var optionShortNameColumnWidth = options.Count == 0 ? 0 : options.Max(o => string.IsNullOrEmpty(o.ShortName) ? 0 : o.ShortName.Length);
-            if (optionShortNameColumnWidth > 0) {
-                optionShortNameColumnWidth += 3; // -name,_
-            }
             var optionLongNameColumnWidth = options.Count == 0 ? 0 : options.Max(o => {
                 var lgt = string.IsNullOrEmpty(o.LongName) ? 0 : o.LongName.Length;
                 if (!string.IsNullOrEmpty(o.ValueName)) {
@@ -88,19 +84,12 @@ namespace CommandLineUtilsPlus {
             if (optionLongNameColumnWidth > 0) {
                 optionLongNameColumnWidth += 2; // --name
             }
-            var commandShortNameColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Names.Skip(1).FirstOrDefault()?.Length ?? 0);
-            if (commandShortNameColumnWidth > 0) {
-                commandShortNameColumnWidth += 2; // ,_
-            }
             var commandLongNameColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
 
-            var firstColumnWidth = optionShortNameColumnWidth + optionLongNameColumnWidth;
-            firstColumnWidth = Math.Max(firstColumnWidth, commandShortNameColumnWidth + commandLongNameColumnWidth);
+            var firstColumnWidth = Math.Max(optionLongNameColumnWidth, commandLongNameColumnWidth);
             firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('[') < 0 ? a.Name.Length : a.Name.Length - 2));
             firstColumnWidth = Math.Max(firstColumnWidth, 20);
             firstColumnWidth = Math.Min(firstColumnWidth, 35);
-            optionLongNameColumnWidth = firstColumnWidth - optionShortNameColumnWidth;
-            commandLongNameColumnWidth = firstColumnWidth - commandShortNameColumnWidth;
 
             var fullCommandLine = application.GetFullCommandLine();
 
@@ -114,9 +103,9 @@ namespace CommandLineUtilsPlus {
 
             GenerateUsage(fullCommandLine, arguments, options, commands, commandType?.GetProperty("RemainingArgs"));
             GenerateArguments(arguments, firstColumnWidth);
-            GenerateOptions(options.Where(o => !o.Inherited).ToList(), optionShortNameColumnWidth, optionLongNameColumnWidth, false);
-            GenerateOptions(options.Where(o => o.Inherited).ToList(), optionShortNameColumnWidth, optionLongNameColumnWidth, true);
-            GenerateCommands(application, fullCommandLine, commands, commandShortNameColumnWidth, commandLongNameColumnWidth);
+            GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
+            GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, true);
+            GenerateCommands(application, fullCommandLine, commands, firstColumnWidth);
 
             if (commandType != null) {
                 var additionalHelpTextAttribute = (CommandAdditionalHelpTextAttribute) Attribute.GetCustomAttribute(commandType, typeof(CommandAdditionalHelpTextAttribute), true);
@@ -188,28 +177,45 @@ namespace CommandLineUtilsPlus {
         /// <summary>
         /// Generate the lines that show information about options
         /// </summary>
-        protected virtual void GenerateOptions(IReadOnlyList<CommandOption> visibleOptions, int optionShortNameColumnWidth, int optionLongNameColumnWidth, bool inheritedOptions) {
-            var firstColumnWidth = optionShortNameColumnWidth + optionLongNameColumnWidth;
+        protected virtual void GenerateOptions(IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth, bool inheritedOptions) {
             if (visibleOptions.Any()) {
                 WriteOnNewLine(null);
                 WriteSectionTitle(inheritedOptions ? "INHERITED OPTIONS" : "OPTIONS");
 
                 foreach (var opt in visibleOptions) {
-                    var shortName = string.IsNullOrEmpty(opt.SymbolName) ? string.IsNullOrEmpty(opt.ShortName) ? "" : $"-{opt.ShortName}, " : $"-{opt.SymbolName}, ";
-                    var longName = string.IsNullOrEmpty(opt.LongName) ? "" : $"--{opt.LongName}";
-                    string valueName = "";
-                    if (!string.IsNullOrEmpty(opt.ValueName)) {
-                        valueName = opt.OptionType == CommandOptionType.SingleOrNoValue ? $"[:{opt.ValueName.Replace("_", " ")}]" : $" <{opt.ValueName.Replace("_", " ")}>";
+                    // TODO: check if we actually want to show letters in green (dont do it if the short name is not entirely in the long name).
+
+                    var longName = opt.LongName ?? "";
+                    var shortName = opt.ShortName ?? "";
+                    var idxShortName = 0;
+                    WriteOnNewLine("-", idxShortName > 0 ? (ConsoleColor?) ConsoleColor.Green : null);
+                    Write("-", !string.IsNullOrEmpty(shortName) ? (ConsoleColor?) ConsoleColor.Green : null);
+                    for (int idxLongName = idxShortName; idxLongName < longName.Length; idxLongName++) {
+                        var ch = longName[idxLongName];
+                        if (idxShortName < shortName.Length && ch == shortName[idxShortName]) {
+                            idxShortName++;
+                            Write(ch.ToString(), ConsoleColor.Green);
+                        } else {
+                            Write(ch.ToString());
+                        }
                     }
-                    var firstColumn = $"{shortName.PadRight(optionShortNameColumnWidth)}{$"{longName}{valueName}".PadRight(optionLongNameColumnWidth)}";
-                    WriteOnNewLine(firstColumn.PadRight(firstColumnWidth + 2));
+
+                    var actualFirstColumnWidth = longName.Length + 2;
+
+                    if (!string.IsNullOrEmpty(opt.ValueName)) {
+                        var valueName = opt.OptionType == CommandOptionType.SingleOrNoValue ? $"[:{opt.ValueName.Replace("_", " ")}]" : $" <{opt.ValueName.Replace("_", " ")}>";
+                        Write(valueName);
+                        actualFirstColumnWidth += valueName.Length;
+                    }
+
                     var text = opt.Description;
                     if (opt.OptionType == CommandOptionType.MultipleValue) {
                         text = $"(Can be used multiple times) {text}";
                     }
-                    if (firstColumn.Length > firstColumnWidth) {
+                    if (actualFirstColumnWidth > firstColumnWidth) {
                         WriteOnNewLine(text, padding: firstColumnWidth + 2);
                     } else {
+                        Write(new string(' ', firstColumnWidth - actualFirstColumnWidth + 2));
                         Write(text, padding: firstColumnWidth + 2);
                     }
                 }
@@ -219,23 +225,32 @@ namespace CommandLineUtilsPlus {
         /// <summary>
         /// Generate the lines that show information about subcommands.
         /// </summary>
-        protected virtual void GenerateCommands(CommandLineApplication application, string thisCommandLine, IReadOnlyList<CommandLineApplication> visibleCommands, int commandShortNameColumnWidth, int commandLongNameColumnWidth) {
-            var firstColumnWidth = commandShortNameColumnWidth + commandLongNameColumnWidth;
+        protected virtual void GenerateCommands(CommandLineApplication application, string thisCommandLine, IReadOnlyList<CommandLineApplication> visibleCommands, int firstColumnWidth) {
             if (visibleCommands.Any()) {
                 WriteOnNewLine(null);
                 WriteSectionTitle("COMMANDS");
 
                 foreach (var cmd in visibleCommands.OrderBy(c => c.Name)) {
-                    string firstColumn;
                     if (cmd.Names.Count() <= 1) {
-                        firstColumn = cmd.Name;
+                        WriteOnNewLine(cmd.Name.PadRight(firstColumnWidth + 2));
                     } else {
-                        firstColumn = $"{$"{cmd.Names.Skip(1).First()}, ".PadRight(commandShortNameColumnWidth)}{cmd.Name.PadRight(commandLongNameColumnWidth)}";
+                        var shortName = cmd.Names.Skip(1).First();
+                        var idxShortName = cmd.Name[0] == shortName[0] ? 1 : 0;
+                        WriteOnNewLine(cmd.Name[0].ToString(), idxShortName > 0 ? (ConsoleColor?) ConsoleColor.Green : null);
+                        for (int idxLongName = idxShortName; idxLongName < cmd.Name.Length; idxLongName++) {
+                            var ch = cmd.Name[idxLongName];
+                            if (idxShortName < shortName.Length && ch == shortName[idxShortName]) {
+                                idxShortName++;
+                                Write(ch.ToString(), ConsoleColor.Green);
+                            } else {
+                                Write(ch.ToString());
+                            }
+                        }
                     }
-                    WriteOnNewLine(firstColumn.PadRight(firstColumnWidth + 2));
                     if (cmd.Name.Length > firstColumnWidth) {
                         WriteOnNewLine(cmd.Description, padding: firstColumnWidth + 2);
                     } else {
+                        Write(new string(' ', firstColumnWidth - cmd.Name.Length + 2));
                         Write(cmd.Description, padding: firstColumnWidth + 2);
                     }
                 }
