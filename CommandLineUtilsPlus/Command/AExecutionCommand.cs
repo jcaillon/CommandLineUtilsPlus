@@ -48,13 +48,13 @@ namespace CommandLineUtilsPlus.Command {
         /// <summary>
         /// Allows to specify the verbosity threshold above which to start logging messages.
         /// </summary>
-        [Option(VerbosityShortName + "|--verbosity <level>", "Sets the verbosity of this command line tool. To get the 'raw output' of a command (without displaying the log), you can set the verbosity to `none`. Specifying this option without a level value sets the verbosity to `debug`. Not specifying the option defaults to `info`. Optionally, set the verbosity level for all commands using the environment variable `OE_VERBOSITY`.", CommandOptionType.SingleOrNoValue, Inherited = true)]
+        [Option(VerbosityShortName + "|--verbosity <level>", "Sets the verbosity of this command line tool. To get the 'raw output' of a command (without displaying the log), you can set the verbosity to `none`. Specifying this option without a level value sets the verbosity to `debug`. Not specifying the option defaults to `info`. Optionally, set the verbosity level for all commands using the environment variable `CLI_VERBOSITY`.", CommandOptionType.SingleOrNoValue, Inherited = true)]
         public (bool HasValue, ConsoleLogThreshold? Value) VerbosityThreshold { get; set; }
 
         /// <summary>
         /// The path of the text log file in which to output the logs.
         /// </summary>
-        [Option("-lo|--log-output <file>", "Output all the log message in a file, independently of the current verbosity. This allow to have a normal verbosity in the console while still logging everything to a file. Specifying this option without a value will output to the default file `sakoe.log`.", CommandOptionType.SingleOrNoValue, Inherited = true)]
+        [Option("-lo|--log-output <file>", "Output all the log message in a file, independently of the current verbosity. This allow to have a normal verbosity in the console while still logging everything to a file. Specifying this option without a value will output to a default log file.", CommandOptionType.SingleOrNoValue, Inherited = true)]
         public (bool HasValue, string Value) LogOutputFilePath { get; set; }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace CommandLineUtilsPlus.Command {
         /// <summary>
         /// Specify how to display the progress bars.
         /// </summary>
-        [Option("-pb|--progress-bar <mode>", "Sets the display mode of progress bars. Specify `off` to hide progress bars and `stay` to make them persistent. Defaults to `on`, which show progress bars but hide them when done.", CommandOptionType.SingleValue, Inherited = true)]
+        [Option("-pb|--progress-bar <mode>", "Sets the display mode of progress bars. Specify `off` to hide progress bars and `persistent` to make them persistent. Defaults to `on`, which show progress bars but hide them when done.", CommandOptionType.SingleValue, Inherited = true)]
         public ConsoleProgressBarDisplayMode? ProgressBarDisplayMode { get; set; }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace CommandLineUtilsPlus.Command {
             HelpWriter = app.HelpTextGenerator as IHelpWriter;
 
             // use system default verbosity?
-            var verbosityEnvVar = Environment.GetEnvironmentVariable("OE_VERBOSITY");
+            var verbosityEnvVar = Environment.GetEnvironmentVariable("CLI_VERBOSITY");
             if ((!VerbosityThreshold.HasValue || VerbosityThreshold.Value == null) && !string.IsNullOrEmpty(verbosityEnvVar) && Enum.TryParse(verbosityEnvVar, true, out ConsoleLogThreshold threshold)) {
                 VerbosityThreshold = (true, threshold);
             }
@@ -191,11 +191,6 @@ namespace CommandLineUtilsPlus.Command {
         /// </summary>
         /// <returns></returns>
         protected virtual string GetLogFilePathDefaultValue() {
-            //if (Directory.Exists(OeBuilderConstants.GetProjectDirectory(Directory.GetCurrentDirectory()))) {
-            //    logFilePath = Path.Combine(OeBuilderConstants.GetProjectDirectoryLocal(Directory.GetCurrentDirectory()), "logs", "sakoe.log");
-            //} else {
-            //    logFilePath =
-            //}
             return Path.Combine(Directory.GetCurrentDirectory(), "app.log");
         }
 

@@ -1,7 +1,7 @@
 #region header
 // ========================================================================
 // Copyright (c) 2019 - Julien Caillon (julien.caillon@gmail.com)
-// This file (Main.cs) is part of CommandLineUtilsPlus.Demo.
+// This file (GlobalLogger.cs) is part of CommandLineUtilsPlus.Demo.
 //
 // CommandLineUtilsPlus.Demo is a free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,23 +18,17 @@
 // ========================================================================
 #endregion
 
-using CommandLineUtilsPlus.Demo.Command;
+using CommandLineUtilsPlus.Console;
 
 namespace CommandLineUtilsPlus.Demo {
 
     /// <summary>
-    /// The underlying entry point of this program.
+    /// Gloabl logger.
     /// </summary>
-    /// <remarks>We can reference external libraries in this class because the assemblies can be resolved at this point.</remarks>
-    public static class EntryPoint {
+    public class GlobalLogger : CommandLineConsoleLogger {
 
-        /// <summary>
-        /// Main method.
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static int Execute(string[] args) {
-            return CommandLineApplicationPlus<MainCommand>.ExecuteCommand(args, ci => new GlobalLogger(ci));
-        }
+        /// <inheritdoc />
+        public GlobalLogger(IConsoleInterface console) : base(console) { }
+
     }
 }

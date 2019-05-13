@@ -58,7 +58,7 @@ namespace CommandLineUtilsPlus.Console.ProgressBar {
         /// <summary>
         /// The character to use as the progress bar foreground.
         /// </summary>
-        public char ForegroundCharacter { get; set; } = '■'; // \u2593
+        public char ForegroundCharacter { get; set; } = '■'; // \u25A0, http://www.fileformat.info/info/charset/UTF-8/list.htm?start=8192
 
         /// <summary>
         /// The character to use as the progress bar background.

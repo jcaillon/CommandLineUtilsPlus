@@ -74,20 +74,20 @@ namespace CommandLineUtilsPlus {
             var options = application.GetOptions().Where(o => o.ShowInHelpText).ToList();
             var commands = application.Commands.Where(c => c.ShowInHelpText).ToList();
 
-            var optionLongNameColumnWidth = options.Count == 0 ? 0 : options.Max(o => {
+            var optionColumnWidth = options.Count == 0 ? 0 : options.Max(o => {
                 var lgt = string.IsNullOrEmpty(o.LongName) ? 0 : o.LongName.Length;
                 if (!string.IsNullOrEmpty(o.ValueName)) {
                     lgt += 3 + o.ValueName.Length; // space and <>
                 }
                 return lgt;
             });
-            if (optionLongNameColumnWidth > 0) {
-                optionLongNameColumnWidth += 2; // --name
+            if (optionColumnWidth > 0) {
+                optionColumnWidth += 2; // --name
             }
-            var commandLongNameColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
+            var commandColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
 
-            var firstColumnWidth = Math.Max(optionLongNameColumnWidth, commandLongNameColumnWidth);
-            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('[') < 0 ? a.Name.Length : a.Name.Length - 2));
+            var firstColumnWidth = Math.Max(optionColumnWidth, commandColumnWidth);
+            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('<') < 0 ? a.Name.Length : a.Name.Length - 2));
             firstColumnWidth = Math.Max(firstColumnWidth, 20);
             firstColumnWidth = Math.Min(firstColumnWidth, 35);
 
@@ -140,7 +140,7 @@ namespace CommandLineUtilsPlus {
                 Write(" [options]");
             }
             foreach (var argument in visibleArguments) {
-                Write($" {argument.Name}");
+                Write($" {(argument.Name.IndexOf('<') < 0 ? $"<{argument.Name}>" : argument.Name)}");
             }
             if (visibleCommands.Any()) {
                 Write(" [command]");
@@ -163,7 +163,7 @@ namespace CommandLineUtilsPlus {
                 WriteSectionTitle("ARGUMENTS");
 
                 foreach (var arg in visibleArguments) {
-                    var name = arg.Name.Replace("[", "").Replace("]", "");
+                    var name = arg.Name.Replace("<", "").Replace(">", "");
                     WriteOnNewLine(name.PadRight(firstColumnWidth + 2));
                     if (name.Length > firstColumnWidth) {
                         WriteOnNewLine(arg.Description, padding: firstColumnWidth + 2);

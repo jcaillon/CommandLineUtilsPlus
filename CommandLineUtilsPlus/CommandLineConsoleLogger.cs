@@ -1,4 +1,5 @@
 ﻿#region header
+
 // ========================================================================
 // Copyright (c) 2018 - Julien Caillon (julien.caillon@gmail.com)
 // This file (ConsoleLogger2.cs) is part of Oetools.Sakoe.
@@ -16,6 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Oetools.Sakoe. If not, see <http://www.gnu.org/licenses/>.
 // ========================================================================
+
 #endregion
 
 using System;
@@ -24,12 +26,10 @@ using System.Text;
 using CommandLineUtilsPlus.Console;
 
 namespace CommandLineUtilsPlus {
-
     /// <summary>
     /// A <see cref="ConsoleLogger"/> that can also log stuff to a text log file.
     /// </summary>
     public class CommandLineConsoleLogger : ConsoleLogger, ICommandLineConsoleLogger {
-
         /// <summary>
         /// Initializes a new instance of <see cref="CommandLineConsoleLogger"/>.
         /// </summary>
@@ -52,7 +52,7 @@ namespace CommandLineUtilsPlus {
 
         /// <inheritdoc cref="IConsoleLogger.ReportProgress"/>
         public override void ReportProgress(int max, int current, string message) {
-            LogToFile(ConsoleLogThreshold.Debug, $"[{$"{(int) Math.Round((decimal) current / max * 100, 2)}%".PadLeft(4)}] {message}", null);
+            LogToFile(ConsoleLogThreshold.Debug, FormatLogMessageProgressAsText(max, current, message), null);
             base.ReportProgress(max, current, message);
         }
 
@@ -73,49 +73,71 @@ namespace CommandLineUtilsPlus {
                 if (!StaticUtilities.IsPathRooted(_logOutputFilePath)) {
                     _logOutputFilePath = Path.Combine(Directory.GetCurrentDirectory(), _logOutputFilePath);
                 }
-                const int maxSizeInMo = 100;
-                if (File.Exists(_logOutputFilePath)) {
-                    if (new FileInfo(_logOutputFilePath).Length > maxSizeInMo * 1024 * 1024) {
-                        Warn($"The log file has a size superior to {maxSizeInMo}MB, please consider clearing it: {_logOutputFilePath.PrettyQuote()}.");
-                    }
-                } else {
-                    try {
-                        var dirName = Path.GetDirectoryName(_logOutputFilePath);
-                        if (!Directory.Exists(dirName)) {
-                            Directory.CreateDirectory(dirName);
-                        }
-                        File.WriteAllText(_logOutputFilePath, "");
-                    } catch (Exception e) {
-                        throw new Exception($"Could not create the log file: {_logOutputFilePath.PrettyQuote()}. {e.Message}", e);
-                    }
-                }
-                Info($"Logging to file: {_logOutputFilePath.PrettyQuote()}.");
+
                 _logContent = new StringBuilder();
-                _logContent.AppendLine("============================================");
-                _logContent.AppendLine($"========= NEW LOG SESSION {DateTime.Now:yy-MM-dd} =========");
+                OnAfterLogOutputFileInit();
             }
+        }
+
+        /// <summary>
+        /// Method called after initializing (setting) <see cref="LogOutputFilePath"/>.
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        protected virtual void OnAfterLogOutputFileInit() {
+            const int maxSizeInMegaBytes = 100;
+            if (File.Exists(_logOutputFilePath)) {
+                if (new FileInfo(_logOutputFilePath).Length > maxSizeInMegaBytes * 1024 * 1024) {
+                    Warn($"The log file has a size superior to {maxSizeInMegaBytes}MB, please consider clearing it: {_logOutputFilePath.PrettyQuote()}.");
+                }
+            } else {
+                try {
+                    var dirName = Path.GetDirectoryName(_logOutputFilePath);
+                    if (!string.IsNullOrEmpty(dirName) && !Directory.Exists(dirName)) {
+                        Directory.CreateDirectory(dirName);
+                    }
+
+                    File.WriteAllText(_logOutputFilePath, "");
+                } catch (Exception e) {
+                    throw new Exception($"Could not create the log file: {_logOutputFilePath.PrettyQuote()}. {e.Message}", e);
+                }
+            }
+
+            Info($"Logging to file: {_logOutputFilePath.PrettyQuote()}.");
+            _logContent.AppendLine("============================================");
+            _logContent.AppendLine($"========= NEW LOG SESSION {DateTime.Now:yy-MM-dd} =========");
         }
 
         private void FlushLogToFile() {
             if (string.IsNullOrEmpty(LogOutputFilePath) || _logContent == null) {
                 return;
             }
+
             File.AppendAllText(LogOutputFilePath, _logContent.ToString());
             _logContent.Clear();
         }
 
         private void LogToFile(ConsoleLogThreshold level, string message, Exception e) {
             if (_logContent != null) {
-                var elapsed = Stopwatch.Elapsed;
-                _logContent.AppendLine($"{level.ToString().ToUpper().PadRight(5, ' ')} [{elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}] {message}");
+                _logContent.Append(FormatLogPrefixForFileOutput(level));
+                _logContent.AppendLine(message);
                 if (e != null) {
                     _logContent.AppendLine(e.ToString());
                 }
+
                 if (_logContent.Length > 100000) {
                     FlushLogToFile();
                 }
             }
         }
 
+        /// <summary>
+        /// Returns the prefix for a message to log in a file (e.g. LVL [00:00] ).
+        /// </summary>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        protected virtual string FormatLogPrefixForFileOutput(ConsoleLogThreshold level) {
+            var elapsed = Stopwatch.Elapsed;
+            return $"{level.ToString().ToUpper().PadRight(5, ' ')} [{elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}] ";
+        }
     }
 }

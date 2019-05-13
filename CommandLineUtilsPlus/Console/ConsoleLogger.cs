@@ -30,20 +30,86 @@ namespace CommandLineUtilsPlus.Console {
     public class ConsoleLogger : ConsoleWriter, IConsoleLogger, IConsoleTraceLogger {
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ConsoleLogger"/>.
+        /// The foreground color of debug message.
         /// </summary>
-        public ConsoleLogger(IConsoleInterface console) : base(console) {
-            Stopwatch = Stopwatch.StartNew();
-            _console = console;
-        }
+        public ConsoleColor DebugForegroundColor { get; set; } = ConsoleColor.Gray;
 
-        private readonly IConsoleInterface _console;
-        private ConsoleProgressBar _progressBar;
+        /// <summary>
+        /// The foreground color of info message.
+        /// </summary>
+        public ConsoleColor InfoForegroundColor { get; set; } = ConsoleColor.Cyan;
+
+        /// <summary>
+        /// The foreground color of done message.
+        /// </summary>
+        public ConsoleColor DoneForegroundColor { get; set; } = ConsoleColor.Green;
+
+        /// <summary>
+        /// The foreground color of warn message.
+        /// </summary>
+        public ConsoleColor WarnForegroundColor { get; set; } = ConsoleColor.Yellow;
+
+        /// <summary>
+        /// The foreground color of error message.
+        /// </summary>
+        public ConsoleColor ErrorForegroundColor { get; set; } = ConsoleColor.Red;
+
+        /// <summary>
+        /// The foreground color of fatal message.
+        /// </summary>
+        public ConsoleColor FatalForegroundColor { get; set; } = ConsoleColor.Magenta;
+
+        /// <summary>
+        /// The foreground color of the progress bar.
+        /// </summary>
+        public ConsoleColor ProgressForegroundColor { get; set; } = ConsoleColor.White;
+
+        /// <summary>
+        /// The foreground color of the progress bar once it reaches 100%.
+        /// </summary>
+        public ConsoleColor? ProgressForegroundColorDone { get; set; } = ConsoleColor.Green;
+
+        /// <summary>
+        /// The foreground color of the progress bar if the loading is done but it did not reach 100%.
+        /// </summary>
+        public ConsoleColor? ProgressForegroundColorUncomplete { get; set; } = ConsoleColor.Red;
+
+        /// <summary>
+        /// The background color of the progress bar.
+        /// </summary>
+        public ConsoleColor? ProgressBackgroundColor { get; set; } = ConsoleColor.DarkGray;
+
+        /// <summary>
+        /// The foreground color to use for the progression text.
+        /// </summary>
+        public ConsoleColor ProgressTextColor { get; set; } = ConsoleColor.Gray;
+
+        /// <summary>
+        /// The character to use as the progress bar foreground.
+        /// </summary>
+        public char ProgressForegroundCharacter { get; set; } = '■';
+
+        /// <summary>
+        /// The character to use as the progress bar background.
+        /// </summary>
+        public char ProgressBackgroundCharacter { get; set; } = '■';
+
+        /// <summary>
+        /// The minimum time interval that should elapse between 2 refresh of the progress bar.
+        /// The lower the smoother the animation. But low value degrade performances.
+        /// </summary>
+        public int ProgressMinimumRefreshRateInMilliseconds { get; set; } = 100;
+
+        /// <summary>
+        /// The maximum time interval that should elapse between 2 refresh of the progress bar.
+        /// Should be less than 1s to correctly display the clock.
+        /// </summary>
+        public int ProgressMaximumRefreshRateInMilliseconds { get; set; } = 900;
 
         /// <summary>
         /// Stopwatch running from this instance creation.
         /// </summary>
-        public Stopwatch Stopwatch { get; set; }
+        public Stopwatch Stopwatch { get; }
 
         /// <summary>
         /// Sets and gets the current threshold at which to start logging events.
@@ -57,6 +123,17 @@ namespace CommandLineUtilsPlus.Console {
         /// Progress bar display mode.
         /// </summary>
         public ConsoleProgressBarDisplayMode ProgressBarDisplayMode { get; set; }
+
+        private readonly IConsoleInterface _console;
+        private ConsoleProgressBar _progressBar;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ConsoleLogger"/>.
+        /// </summary>
+        public ConsoleLogger(IConsoleInterface console) : base(console) {
+            Stopwatch = Stopwatch.StartNew();
+            _console = console;
+        }
 
         /// <inheritdoc />
         public override void Dispose() {
@@ -115,16 +192,23 @@ namespace CommandLineUtilsPlus.Console {
 
             if (_console.IsOutputRedirected) {
                 // cannot use the progress bar
-                Debug($"[{$"{(int) Math.Round((decimal) current / max * 100, 2)}%".PadLeft(4)}] {message}");
+                Debug(FormatLogMessageProgressAsText(max, current, message));
                 return;
             }
-
 
             try {
                 if (_progressBar == null) {
                     _progressBar = new ConsoleProgressBar(_console, max, message) {
                         ClearProgressBarOnStop = ProgressBarDisplayMode == ConsoleProgressBarDisplayMode.On,
-                        TextColor = ConsoleColor.Gray
+                        TextColor = ProgressTextColor,
+                        BackgroundCharacter = ProgressBackgroundCharacter,
+                        ForegroundCharacter = ProgressForegroundCharacter,
+                        BackgroundColor = ProgressBackgroundColor,
+                        ForegroundColor = ProgressForegroundColor,
+                        ForegroundColorDone = ProgressForegroundColorDone,
+                        ForegroundColorUncomplete = ProgressForegroundColorUncomplete,
+                        MaximumRefreshRateInMilliseconds = ProgressMaximumRefreshRateInMilliseconds,
+                        MinimumRefreshRateInMilliseconds = ProgressMinimumRefreshRateInMilliseconds,
                     };
                 }
                 if (!_progressBar.IsRunning) {
@@ -148,9 +232,32 @@ namespace CommandLineUtilsPlus.Console {
             }
         }
 
+        /// <summary>
+        /// Returns the message to output when the progress can not be displayed as a progress bar and must be output as raw text.
+        /// This is the case when the progression is reported in a text file for instance.
+        /// </summary>
+        /// <param name="max"></param>
+        /// <param name="current"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected virtual string FormatLogMessageProgressAsText(int max, int current, string message) {
+            return $"[{$"{(int) Math.Round((decimal) current / max * 100, 2)}%".PadLeft(4)}] {message}";
+        }
+
         /// <inheritdoc />
         public void ReportGlobalProgress(int max, int current, string message) {
-            Log(ConsoleLogThreshold.Info, $"{message} ({(int) Math.Round((decimal) current / max * 100, 2)}%)");
+            Log(ConsoleLogThreshold.Info, FormatLogMessageGlobalProgress(max, current, message));
+        }
+
+        /// <summary>
+        /// Returns the message to display when signaling a global progress.
+        /// </summary>
+        /// <param name="max"></param>
+        /// <param name="current"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected virtual string FormatLogMessageGlobalProgress(int max, int current, string message) {
+            return $"{message} ({(int) Math.Round((decimal) current / max * 100, 2)}%)";
         }
 
         /// <inheritdoc />
@@ -190,6 +297,16 @@ namespace CommandLineUtilsPlus.Console {
         }
 
         /// <summary>
+        /// Returns the prefix for a message to log (e.g. LVL [00:00] ).
+        /// </summary>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        protected virtual string FormatLogPrefix(ConsoleLogThreshold level) {
+            var elapsed = Stopwatch.Elapsed;
+            return $"{level.ToString().ToUpper().PadRight(5, ' ')} [{elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}] ";
+        }
+
+        /// <summary>
         /// Log a message.
         /// </summary>
         /// <param name="level"></param>
@@ -202,36 +319,35 @@ namespace CommandLineUtilsPlus.Console {
             }
             StopProgressBar();
 
-            var elapsed = Stopwatch.Elapsed;
-            var logPrefix = $"{level.ToString().ToUpper().PadRight(5, ' ')} [{elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}] ";
+            var logPrefix = FormatLogPrefix(level);
 
             ConsoleColor outputColor;
             switch (level) {
                 case ConsoleLogThreshold.Debug:
-                    outputColor = ConsoleColor.Gray;
+                    outputColor = DebugForegroundColor;
                     break;
                 case ConsoleLogThreshold.Info:
-                    outputColor = ConsoleColor.Cyan;
+                    outputColor = InfoForegroundColor;
                     break;
                 case ConsoleLogThreshold.Done:
-                    outputColor = ConsoleColor.Green;
+                    outputColor = DoneForegroundColor;
                     break;
                 case ConsoleLogThreshold.Warn:
-                    outputColor = ConsoleColor.Yellow;
+                    outputColor = WarnForegroundColor;
                     break;
                 case ConsoleLogThreshold.Error:
-                    outputColor = ConsoleColor.Red;
+                    outputColor = ErrorForegroundColor;
                     break;
                 case ConsoleLogThreshold.Fatal:
-                    outputColor = ConsoleColor.Magenta;
+                    outputColor = FatalForegroundColor;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
 
             if (e != null && LogTheshold <= ConsoleLogThreshold.Debug) {
-                base.WriteErrorOnNewLine(logPrefix, ConsoleColor.Gray);
-                base.WriteError(e.ToString(), ConsoleColor.Gray, logPrefix.Length);
+                base.WriteErrorOnNewLine(logPrefix, DebugForegroundColor);
+                base.WriteError(e.ToString(), DebugForegroundColor, logPrefix.Length);
             }
             if (level >= ConsoleLogThreshold.Error) {
                 base.WriteErrorOnNewLine(logPrefix, outputColor);

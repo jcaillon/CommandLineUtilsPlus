@@ -348,10 +348,12 @@ sakoe st input -b2 s1024"
         protected override int ExecuteCommand(CommandLineApplication app, IConsole console) {
 
             Out.WriteOnNewLine($"WindowWidth = {Con.WindowWidth}");
-            Out.WriteOnNewLine($"CursorTop = {Con.CursorTop}");
-            Out.WriteOnNewLine($"CursorVisible = {Con.CursorVisible}");
             Out.WriteOnNewLine($"IsOutputRedirected = {Con.IsOutputRedirected}");
             Out.WriteOnNewLine($"IsErrorRedirected = {Con.IsErrorRedirected}");
+            if (!Con.IsOutputRedirected) {
+                Out.WriteOnNewLine($"CursorTop = {Con.CursorTop}");
+                Out.WriteOnNewLine($"CursorVisible = {Con.CursorVisible}");
+            }
 
             foreach (var name in Enum.GetNames(typeof(ConsoleColor))) {
                 var val = (ConsoleColor) Enum.Parse(typeof(ConsoleColor), name);
@@ -411,6 +413,7 @@ sakoe st input -b2 s1024"
             Log.Fatal("Log fatal");
             Log.Done("Log success");
             Log?.Info(app.GetTypeFromCommandLineApp().ToString());
+            Log.Info(string.Join("", '\u2588', '_', '\u258C', '_', '\u2589', '_', '\u258A', '_', '\u258B', '_', '\u258D', '_', '\u258E', '_', '\u258F', '_', '\u259B', '_', '\u2580'));
 
             for (var i = 0; i <= 90; i++) {
                 CancelToken?.ThrowIfCancellationRequested();

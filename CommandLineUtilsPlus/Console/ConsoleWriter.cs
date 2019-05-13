@@ -30,12 +30,10 @@ namespace CommandLineUtilsPlus.Console {
 
         // TODO: add interface to draw a tree
 
-        private readonly TextWriterOutputWordWrap _wordWrapWriter;
-        private readonly IConsoleInterface _console;
-
-        private int _treeLevel;
-        private string _treeNewLinePrefix;
-        private bool _pushNewNode;
+        /// <summary>
+        /// The default foreground color for the text to write in the console.
+        /// </summary>
+        public ConsoleColor DefaultTextColor { get; set; } = ConsoleColor.White;
 
         /// <inheritdoc />
         public TextWriter OutputTextWriter {
@@ -48,6 +46,13 @@ namespace CommandLineUtilsPlus.Console {
             get => _wordWrapWriter.HasWroteToOuput;
             set => _wordWrapWriter.HasWroteToOuput = value;
         }
+
+        private readonly TextWriterOutputWordWrap _wordWrapWriter;
+        private readonly IConsoleInterface _console;
+
+        private int _treeLevel;
+        private string _treeNewLinePrefix;
+        private bool _pushNewNode;
 
         /// <summary>
         /// Constructor.
