@@ -82,13 +82,19 @@ namespace CommandLineUtilsPlus.Console {
         /// Starts a new "tree" node. Write the next text as a node and subsequent texts as children of this node.
         /// </summary>
         /// <returns></returns>
-        IConsoleWriter PushNode(bool isLastChild = false);
+        IConsoleWriter AddNode(bool isLastChild = false);
+
+        /// <summary>
+        /// Starts a new "tree" node. Write the next text as a node and subsequent texts as children of this node.
+        /// </summary>
+        /// <returns></returns>
+        IConsoleWriter PushLevel();
 
         /// <summary>
         /// Ends a "tree" node. The next text will wrote at the same level as the current node.
         /// </summary>
         /// <returns></returns>
-        IConsoleWriter PopNode();
+        IConsoleWriter PopLevel();
 
         /// <summary>
         /// Set or get the text writer to write to.

@@ -27,7 +27,6 @@ using System.Reflection;
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
-using McMaster.Extensions.CommandLineUtils.HelpText;
 
 namespace CommandLineUtilsPlus {
 
@@ -37,23 +36,60 @@ namespace CommandLineUtilsPlus {
     public class CommandLineHelpGenerator : ICommandLineHelpGenerator {
 
         /// <summary>
+        /// The base indentation to apply to the whole help text.
+        /// </summary>
+        public virtual int BaseIndentation { get; set; } = 1;
+
+        /// <summary>
+        /// Extra indentation to apply to the text of a particular section.
+        /// </summary>
+        public virtual int SectionIndentation { get; set; } = 2;
+
+        /// <summary>
+        /// The minimum width for the first column.
+        /// Arguments, options and commands are presented in 2 columns: the name (1st) and the description (2nd).
+        /// </summary>
+        public virtual int MinimumFirstColumnWidth { get; set; } = 20;
+
+        /// <summary>
+        /// The maximum width for the first column.
+        /// Arguments, options and commands are presented in 2 columns: the name (1st) and the description (2nd).
+        /// </summary>
+        public virtual int MaximumFirstColumnWidth { get; set; } = 20;
+
+        /// <summary>
+        /// The text color for the letters matching an command alias or an option short name.
+        /// </summary>
+        public virtual ConsoleColor AliasTextColor { get; set; } = ConsoleColor.Green;
+
+        /// <summary>
+        /// The text color for a section title.
+        /// </summary>
+        public virtual ConsoleColor SectionTitleTextColor { get; set; } = ConsoleColor.Cyan;
+
+        /// <summary>
+        /// The text color for a tip.
+        /// </summary>
+        public virtual ConsoleColor TipTextColor { get; set; } = ConsoleColor.Gray;
+
+        /// <summary>
+        /// The default text color to display the help.
+        /// </summary>
+        public virtual ConsoleColor? DefaultTextColor { get; set; } = null;
+
+        /// <summary>
+        /// The console writer associated with this instance.
+        /// </summary>
+        protected IConsoleWriter ConsoleWriter => _console;
+
+        private IConsoleWriter _console;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="CommandLineHelpGenerator"/>.
         /// </summary>
         public CommandLineHelpGenerator(IConsoleWriter console) {
             _console = console;
         }
-
-        private IConsoleWriter _console;
-
-        /// <summary>
-        /// The base indentation to apply to the whole help text.
-        /// </summary>
-        protected const int BaseIndentation = 1;
-
-        /// <summary>
-        /// Extra indentation to apply to the text of a particular section.
-        /// </summary>
-        protected const int SectionIndentation = 2;
 
         /// <inheritdoc />
         public virtual void Generate(CommandLineApplication application, TextWriter output) {
@@ -74,22 +110,7 @@ namespace CommandLineUtilsPlus {
             var options = application.GetOptions().Where(o => o.ShowInHelpText).ToList();
             var commands = application.Commands.Where(c => c.ShowInHelpText).ToList();
 
-            var optionColumnWidth = options.Count == 0 ? 0 : options.Max(o => {
-                var lgt = string.IsNullOrEmpty(o.LongName) ? 0 : o.LongName.Length;
-                if (!string.IsNullOrEmpty(o.ValueName)) {
-                    lgt += 3 + o.ValueName.Length; // space and <>
-                }
-                return lgt;
-            });
-            if (optionColumnWidth > 0) {
-                optionColumnWidth += 2; // --name
-            }
-            var commandColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
-
-            var firstColumnWidth = Math.Max(optionColumnWidth, commandColumnWidth);
-            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('<') < 0 ? a.Name.Length : a.Name.Length - 2));
-            firstColumnWidth = Math.Max(firstColumnWidth, 20);
-            firstColumnWidth = Math.Min(firstColumnWidth, 35);
+            var firstColumnWidth = GetFirstColumnWidth(application, arguments, options, commands);
 
             var fullCommandLine = application.GetFullCommandLine();
 
@@ -126,6 +147,39 @@ namespace CommandLineUtilsPlus {
             }
 
             WriteOnNewLine(null);
+        }
+
+        /// <summary>
+        /// Returns the computed first column width that will be used to display a command help
+        /// </summary>
+        /// <param name="application"></param>
+        /// <param name="arguments"></param>
+        /// <param name="options"></param>
+        /// <param name="commands"></param>
+        /// <returns></returns>
+        protected virtual int GetFirstColumnWidth(CommandLineApplication application, List<CommandArgument> arguments, List<CommandOption> options, List<CommandLineApplication> commands) {
+            var optionColumnWidth = options.Count == 0
+                ? 0
+                : options.Max(o => {
+                    var lgt = string.IsNullOrEmpty(o.LongName) ? 0 : o.LongName.Length;
+                    if (!string.IsNullOrEmpty(o.ValueName)) {
+                        lgt += 3 + o.ValueName.Length; // space and <>
+                    }
+                    return lgt;
+                });
+
+            if (optionColumnWidth > 0) {
+                optionColumnWidth += 2; // --name
+            }
+
+            var commandColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
+
+            var firstColumnWidth = Math.Max(optionColumnWidth, commandColumnWidth);
+            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('<') < 0 ? a.Name.Length : a.Name.Length - 2));
+            firstColumnWidth = Math.Max(firstColumnWidth, MinimumFirstColumnWidth);
+            firstColumnWidth = Math.Min(firstColumnWidth, MaximumFirstColumnWidth);
+
+            return firstColumnWidth;
         }
 
         /// <summary>
@@ -183,24 +237,16 @@ namespace CommandLineUtilsPlus {
                 WriteSectionTitle(inheritedOptions ? "INHERITED OPTIONS" : "OPTIONS");
 
                 foreach (var opt in visibleOptions) {
-                    // TODO: check if we actually want to show letters in green (dont do it if the short name is not entirely in the long name).
-
-                    var longName = opt.LongName ?? "";
-                    var shortName = opt.ShortName ?? "";
-                    var idxShortName = 0;
-                    WriteOnNewLine("-", idxShortName > 0 ? (ConsoleColor?) ConsoleColor.Green : null);
-                    Write("-", !string.IsNullOrEmpty(shortName) ? (ConsoleColor?) ConsoleColor.Green : null);
-                    for (int idxLongName = idxShortName; idxLongName < longName.Length; idxLongName++) {
-                        var ch = longName[idxLongName];
-                        if (idxShortName < shortName.Length && ch == shortName[idxShortName]) {
-                            idxShortName++;
-                            Write(ch.ToString(), ConsoleColor.Green);
-                        } else {
-                            Write(ch.ToString());
-                        }
+                    WriteOnNewLine("-");
+                    if (string.IsNullOrEmpty(opt.ShortName) || !IsShortNameIncludedInLongName(opt.LongName, opt.ShortName)) {
+                        Write("-");
+                        Write(opt.LongName);
+                    } else {
+                        Write("-", AliasTextColor);
+                        WriteLongNameIncludingShortName(opt.LongName, opt.ShortName, AliasTextColor);
                     }
 
-                    var actualFirstColumnWidth = longName.Length + 2;
+                    var actualFirstColumnWidth = opt.LongName.Length + 2;
 
                     if (!string.IsNullOrEmpty(opt.ValueName)) {
                         var valueName = opt.OptionType == CommandOptionType.SingleOrNoValue ? $"[:{opt.ValueName.Replace("_", " ")}]" : $" <{opt.ValueName.Replace("_", " ")}>";
@@ -234,17 +280,12 @@ namespace CommandLineUtilsPlus {
                     if (cmd.Names.Count() <= 1) {
                         WriteOnNewLine(cmd.Name.PadRight(firstColumnWidth + 2));
                     } else {
-                        var shortName = cmd.Names.Skip(1).First();
-                        var idxShortName = cmd.Name[0] == shortName[0] ? 1 : 0;
-                        WriteOnNewLine(cmd.Name[0].ToString(), idxShortName > 0 ? (ConsoleColor?) ConsoleColor.Green : null);
-                        for (int idxLongName = idxShortName; idxLongName < cmd.Name.Length; idxLongName++) {
-                            var ch = cmd.Name[idxLongName];
-                            if (idxShortName < shortName.Length && ch == shortName[idxShortName]) {
-                                idxShortName++;
-                                Write(ch.ToString(), ConsoleColor.Green);
-                            } else {
-                                Write(ch.ToString());
-                            }
+                        var commandAlias = cmd.Names.Skip(1).FirstOrDefault();
+                        WriteOnNewLine(null);
+                        if (string.IsNullOrEmpty(commandAlias) || !IsShortNameIncludedInLongName(cmd.Name, commandAlias)) {
+                            Write(cmd.Name);
+                        } else {
+                            WriteLongNameIncludingShortName(cmd.Name, commandAlias, AliasTextColor);
                         }
                     }
                     if (cmd.Name.Length > firstColumnWidth) {
@@ -260,16 +301,64 @@ namespace CommandLineUtilsPlus {
             }
         }
 
+        /// <summary>
+        /// Writes <paramref name="longName"/> but writes the letters matching <paramref name="shortName"/> in an alternative color.
+        /// </summary>
+        /// <param name="longName"></param>
+        /// <param name="shortName"></param>
+        /// <param name="alternativeFg"></param>
+        /// <param name="baseFg"></param>
+        protected void WriteLongNameIncludingShortName(string longName, string shortName, ConsoleColor? alternativeFg, ConsoleColor? baseFg = null) {
+            if (string.IsNullOrEmpty(shortName)) {
+                Write(longName, baseFg);
+                return;
+            }
+
+            var shortNameIdx = 0;
+            var shortNameLength = shortName.Length;
+            for (int idxLongName = 0; idxLongName < longName.Length; idxLongName++) {
+                var ch = longName[idxLongName];
+                if (shortNameIdx < shortNameLength && ch == shortName[shortNameIdx]) {
+                    shortNameIdx++;
+                    Write(ch.ToString(), alternativeFg);
+                } else {
+                    Write(ch.ToString(), baseFg);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test if <paramref name="shortName"/> is entirely included in <paramref name="longName"/>.
+        /// For instance -ips is entirely included in --i-pass.
+        /// </summary>
+        /// <param name="longName"></param>
+        /// <param name="shortName"></param>
+        /// <returns></returns>
+        protected bool IsShortNameIncludedInLongName(string longName, string shortName) {
+            if (string.IsNullOrEmpty(longName) || string.IsNullOrEmpty(shortName)) {
+                return false;
+            }
+
+            var shortNameIdx = 0;
+            var shortNameLength = shortName.Length;
+            for (int idxLongName = 0; idxLongName < longName.Length; idxLongName++) {
+                if (shortNameIdx < shortNameLength && longName[idxLongName] == shortName[shortNameIdx]) {
+                    shortNameIdx++;
+                }
+            }
+            return shortNameIdx == shortNameLength;
+        }
+
         private int _currentPadding;
 
         /// <inheritdoc cref="IConsoleWriter.WriteOnNewLine"/>
         public virtual void WriteOnNewLine(string result, ConsoleColor? color = null, int padding = 0, string prefixForNewLines = null) {
-            _console.WriteOnNewLine(result, color, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
+            _console.WriteOnNewLine(result, color ?? DefaultTextColor, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
         }
 
         /// <inheritdoc cref="IConsoleWriter.Write"/>
         public virtual void Write(string result, ConsoleColor? color = null, int padding = 0, string prefixForNewLines = null) {
-            _console.Write(result, color, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
+            _console.Write(result, color ?? DefaultTextColor, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
         }
 
         /// <summary>
@@ -279,14 +368,14 @@ namespace CommandLineUtilsPlus {
         /// <param name="padding"></param>
         public virtual void WriteSectionTitle(string result, int padding = 0) {
             _currentPadding = 0;
-            _console.WriteOnNewLine(result, ConsoleColor.Cyan, padding + BaseIndentation + _currentPadding);
+            _console.WriteOnNewLine(result, SectionTitleTextColor, padding + BaseIndentation + _currentPadding);
             _currentPadding = SectionIndentation;
         }
 
         /// <inheritdoc cref="IConsoleWriter.Write"/>
         /// <summary>Write a tip.</summary>
         public virtual void WriteTip(string result, int padding = 0, string prefixForNewLines = null) {
-            _console.WriteOnNewLine(result, ConsoleColor.Gray, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
+            _console.WriteOnNewLine(result, TipTextColor, padding + BaseIndentation + _currentPadding, BaseIndentation + _currentPadding == 0 || string.IsNullOrEmpty(prefixForNewLines) ? prefixForNewLines : prefixForNewLines.PadLeft(prefixForNewLines.Length + BaseIndentation + _currentPadding, ' '));
         }
 
     }

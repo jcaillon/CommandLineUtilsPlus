@@ -32,79 +32,79 @@ namespace CommandLineUtilsPlus.Console {
         /// <summary>
         /// The foreground color of debug message.
         /// </summary>
-        public ConsoleColor DebugForegroundColor { get; set; } = ConsoleColor.Gray;
+        public virtual ConsoleColor DebugForegroundColor { get; set; } = ConsoleColor.Gray;
 
         /// <summary>
         /// The foreground color of info message.
         /// </summary>
-        public ConsoleColor InfoForegroundColor { get; set; } = ConsoleColor.Cyan;
+        public virtual ConsoleColor InfoForegroundColor { get; set; } = ConsoleColor.Cyan;
 
         /// <summary>
         /// The foreground color of done message.
         /// </summary>
-        public ConsoleColor DoneForegroundColor { get; set; } = ConsoleColor.Green;
+        public virtual ConsoleColor DoneForegroundColor { get; set; } = ConsoleColor.Green;
 
         /// <summary>
         /// The foreground color of warn message.
         /// </summary>
-        public ConsoleColor WarnForegroundColor { get; set; } = ConsoleColor.Yellow;
+        public virtual ConsoleColor WarnForegroundColor { get; set; } = ConsoleColor.Yellow;
 
         /// <summary>
         /// The foreground color of error message.
         /// </summary>
-        public ConsoleColor ErrorForegroundColor { get; set; } = ConsoleColor.Red;
+        public virtual ConsoleColor ErrorForegroundColor { get; set; } = ConsoleColor.Red;
 
         /// <summary>
         /// The foreground color of fatal message.
         /// </summary>
-        public ConsoleColor FatalForegroundColor { get; set; } = ConsoleColor.Magenta;
+        public virtual ConsoleColor FatalForegroundColor { get; set; } = ConsoleColor.Magenta;
 
         /// <summary>
         /// The foreground color of the progress bar.
         /// </summary>
-        public ConsoleColor ProgressForegroundColor { get; set; } = ConsoleColor.White;
+        public virtual ConsoleColor ProgressForegroundColor { get; set; } = ConsoleColor.White;
 
         /// <summary>
         /// The foreground color of the progress bar once it reaches 100%.
         /// </summary>
-        public ConsoleColor? ProgressForegroundColorDone { get; set; } = ConsoleColor.Green;
+        public virtual ConsoleColor? ProgressForegroundColorDone { get; set; } = ConsoleColor.Green;
 
         /// <summary>
         /// The foreground color of the progress bar if the loading is done but it did not reach 100%.
         /// </summary>
-        public ConsoleColor? ProgressForegroundColorUncomplete { get; set; } = ConsoleColor.Red;
+        public virtual ConsoleColor? ProgressForegroundColorUncomplete { get; set; } = ConsoleColor.Red;
 
         /// <summary>
         /// The background color of the progress bar.
         /// </summary>
-        public ConsoleColor? ProgressBackgroundColor { get; set; } = ConsoleColor.DarkGray;
+        public virtual ConsoleColor? ProgressBackgroundColor { get; set; } = ConsoleColor.DarkGray;
 
         /// <summary>
         /// The foreground color to use for the progression text.
         /// </summary>
-        public ConsoleColor ProgressTextColor { get; set; } = ConsoleColor.Gray;
+        public virtual ConsoleColor ProgressTextColor { get; set; } = ConsoleColor.Gray;
 
         /// <summary>
         /// The character to use as the progress bar foreground.
         /// </summary>
-        public char ProgressForegroundCharacter { get; set; } = '■';
+        public virtual char ProgressForegroundCharacter { get; set; } = '■';
 
         /// <summary>
         /// The character to use as the progress bar background.
         /// </summary>
-        public char ProgressBackgroundCharacter { get; set; } = '■';
+        public virtual char ProgressBackgroundCharacter { get; set; } = '■';
 
         /// <summary>
         /// The minimum time interval that should elapse between 2 refresh of the progress bar.
         /// The lower the smoother the animation. But low value degrade performances.
         /// </summary>
-        public int ProgressMinimumRefreshRateInMilliseconds { get; set; } = 100;
+        public virtual int ProgressMinimumRefreshRateInMilliseconds { get; set; } = 100;
 
         /// <summary>
         /// The maximum time interval that should elapse between 2 refresh of the progress bar.
         /// Should be less than 1s to correctly display the clock.
         /// </summary>
-        public int ProgressMaximumRefreshRateInMilliseconds { get; set; } = 900;
+        public virtual int ProgressMaximumRefreshRateInMilliseconds { get; set; } = 900;
 
         /// <summary>
         /// Stopwatch running from this instance creation.

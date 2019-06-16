@@ -48,10 +48,10 @@ namespace CommandLineUtilsPlus {
         /// <param name="logger"></param>
         /// <param name="helper"></param>
         /// <returns></returns>
-        public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleInterface, ICommandLineHelpGenerator> helper = null) {
+        public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleWriter, ICommandLineHelpGenerator> helper = null) {
             var console = new CommandLineConsoleInterface();
             ICommandLineConsoleLogger consoleLogger = logger?.Invoke(console) ?? new CommandLineConsoleLogger(console);
-            ICommandLineHelpGenerator helpGenerator = helper?.Invoke(console) ?? new CommandLineHelpGenerator(consoleLogger);
+            ICommandLineHelpGenerator helpGenerator = helper?.Invoke(consoleLogger) ?? new CommandLineHelpGenerator(consoleLogger);
             try {
                 console.CursorVisible = false;
                 using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, Directory.GetCurrentDirectory(), true)) {

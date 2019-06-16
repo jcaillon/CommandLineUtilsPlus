@@ -30,6 +30,12 @@ namespace CommandLineUtilsPlus {
     /// A <see cref="ConsoleLogger"/> that can also log stuff to a text log file.
     /// </summary>
     public class CommandLineConsoleLogger : ConsoleLogger, ICommandLineConsoleLogger {
+
+        /// <summary>
+        /// The file size above which a warning is printed to the user asking to clean the log file.
+        /// </summary>
+        public virtual int MaxSizeInMegaBytes { get; set; } = 100;
+
         /// <summary>
         /// Initializes a new instance of <see cref="CommandLineConsoleLogger"/>.
         /// </summary>
@@ -84,10 +90,9 @@ namespace CommandLineUtilsPlus {
         /// </summary>
         /// <exception cref="Exception"></exception>
         protected virtual void OnAfterLogOutputFileInit() {
-            const int maxSizeInMegaBytes = 100;
             if (File.Exists(_logOutputFilePath)) {
-                if (new FileInfo(_logOutputFilePath).Length > maxSizeInMegaBytes * 1024 * 1024) {
-                    Warn($"The log file has a size superior to {maxSizeInMegaBytes}MB, please consider clearing it: {_logOutputFilePath.PrettyQuote()}.");
+                if (new FileInfo(_logOutputFilePath).Length > MaxSizeInMegaBytes * 1024 * 1024) {
+                    Warn($"The log file has a size superior to {MaxSizeInMegaBytes}MB, please consider clearing it: {_logOutputFilePath.PrettyQuote()}.");
                 }
             } else {
                 try {
