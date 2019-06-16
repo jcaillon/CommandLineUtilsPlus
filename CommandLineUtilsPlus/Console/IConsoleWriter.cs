@@ -79,22 +79,31 @@ namespace CommandLineUtilsPlus.Console {
         void WriteErrorOnNewLine(string text, ConsoleColor? color = null, int indentation = 0, string prefixForNewLines = null);
 
         /// <summary>
-        /// Starts a new "tree" node. Write the next text as a node and subsequent texts as children of this node.
+        /// States that the next line of text written with <see cref="WriteOnNewLine"/> or <see cref="WriteErrorOnNewLine"/> will be a tree item.
+        /// For this method to have an effect, the tree must have a current depth of at least 1, see <see cref="IncreaseTreeDepth"/>.
+        /// To correctly draw the tree, it is needed to know if the next line will represent the last item for the current depth, see <paramref name="isLastItemOfCurrentDepth"/>.
         /// </summary>
+        /// <param name="isLastItemOfCurrentDepth">Is the next item the last item for the current depth.</param>
         /// <returns></returns>
-        IConsoleWriter AddNode(bool isLastChild = false);
+        IConsoleWriter NewTreeItem(bool isLastItemOfCurrentDepth = false);
 
         /// <summary>
-        /// Starts a new "tree" node. Write the next text as a node and subsequent texts as children of this node.
+        /// Increase the depth of the tree to draw. Default depth is 0. The tree starts displaying at depth 1 so this method is to be called first.
         /// </summary>
         /// <returns></returns>
-        IConsoleWriter PushLevel();
+        IConsoleWriter IncreaseTreeDepth();
 
         /// <summary>
-        /// Ends a "tree" node. The next text will wrote at the same level as the current node.
+        /// Decreases the depth of the current by 1.
         /// </summary>
         /// <returns></returns>
-        IConsoleWriter PopLevel();
+        IConsoleWriter DecreaseTreeDepth();
+
+        /// <summary>
+        /// Closes the current tree, resetting the depth to 0.
+        /// </summary>
+        /// <returns></returns>
+        IConsoleWriter CloseTree();
 
         /// <summary>
         /// Set or get the text writer to write to.

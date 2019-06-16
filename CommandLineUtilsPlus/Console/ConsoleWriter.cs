@@ -48,6 +48,7 @@ namespace CommandLineUtilsPlus.Console {
 
         private readonly TextWriterOutputWordWrap _wordWrapWriter;
         private readonly IConsoleInterface _console;
+        private readonly TextTreeHelper _treeHelper = new TextTreeHelper();
 
         /// <summary>
         /// Constructor.
@@ -81,112 +82,64 @@ namespace CommandLineUtilsPlus.Console {
         /// <inheritdoc />
         public virtual void Write(string text, ConsoleColor? color = null, int indentation = 0, string prefixForNewLines = null) {
             _console.ForegroundColor = color ?? DefaultTextColor;
-            _wordWrapWriter.Write(text, _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, false, indentation, string.IsNullOrEmpty(prefixForNewLines) ? GetNewLinePrefix() : $"{prefixForNewLines}{GetNewLinePrefix()}");
+            _wordWrapWriter.Write(text, _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, false, indentation, GetNewLinePrefix(prefixForNewLines));
         }
 
         /// <inheritdoc />
         public virtual void WriteOnNewLine(string text, ConsoleColor? color = null, int indentation = 0, string prefixForNewLines = null) {
             _console.ForegroundColor = color ?? DefaultTextColor;
-            _wordWrapWriter.Write(GetText(text), _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, true, indentation, string.IsNullOrEmpty(prefixForNewLines) ? GetNewLinePrefix() : $"{prefixForNewLines}{GetNewLinePrefix()}");
+            _wordWrapWriter.Write(GetText(text), _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, true, indentation, GetNewLinePrefix(prefixForNewLines));
         }
 
         /// <inheritdoc />
         public virtual void WriteError(string text, ConsoleColor? color = null, int indentation = 0, string prefixForNewLines = null) {
             _console.ForegroundColor = color ?? DefaultTextColor;
-            _wordWrapWriter.Write(text, _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, false, indentation, string.IsNullOrEmpty(prefixForNewLines) ? GetNewLinePrefix() : $"{prefixForNewLines}{GetNewLinePrefix()}");
+            _wordWrapWriter.Write(text, _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, false, indentation, GetNewLinePrefix(prefixForNewLines));
         }
 
         /// <inheritdoc />
         public virtual void WriteErrorOnNewLine(string text, ConsoleColor? color = null, int indentation = 0, string prefixForNewLines = null) {
             _console.ForegroundColor = color ?? DefaultTextColor;
-            _wordWrapWriter.Write(GetText(text), _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, true, indentation, string.IsNullOrEmpty(prefixForNewLines) ? GetNewLinePrefix() : $"{prefixForNewLines}{GetNewLinePrefix()}");
+            _wordWrapWriter.Write(GetText(text), _console.IsOutputRedirected ? 0 : _console.WindowWidth - 1, true, indentation, GetNewLinePrefix(prefixForNewLines));
         }
+
 
         private string GetText(string text) {
-            if (_treeLevel == 0) {
+            if (!_treeHelper.Active) {
                 return text;
             }
-            return $"{(IsNode() ? GetNodePrefix() : GetNewLinePrefix())}{text}";
+            return $"{_treeHelper.GetTextPrefix()}{text}";
         }
 
-        private StringBuilder _prefix = new StringBuilder();
-        private byte _treeLevel;
-        private bool _addNode;
-        private bool _isLastChild;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public bool IsNode() {
-            if (_addNode) {
-                _addNode = false;
-                return true;
+        private string GetNewLinePrefix(string prefixForNewLines) {
+            if (!_treeHelper.Active) {
+                return prefixForNewLines;
             }
-            return false;
+            return string.IsNullOrEmpty(prefixForNewLines) ? _treeHelper.GetNewLinePrefix() : $"{prefixForNewLines}{_treeHelper.GetNewLinePrefix()}";
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public string GetNodePrefix() {
-            if (_treeLevel == 0) {
-                return null;
-            }
-            if (_isLastChild) {
-                return $"{_prefix}└─ ";
-            }
-            return $"{_prefix}├─ ";
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public string GetNewLinePrefix() {
-            if (_treeLevel == 0) {
-                return null;
-            }
-            return _isLastChild ? $"{_prefix}   " : $"{_prefix}│  ";
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="isLastChild"></param>
-        /// <returns></returns>
-        public virtual IConsoleWriter AddNode(bool isLastChild = false) {
-            _addNode = true;
-            _isLastChild = isLastChild;
+        /// <inheritdoc />
+        public IConsoleWriter NewTreeItem(bool isLastItemOfCurrentDepth = false) {
+            _treeHelper.NewTreeItem(isLastItemOfCurrentDepth);
             return this;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public virtual IConsoleWriter PushLevel() {
-            _treeLevel++;
-            if (_treeLevel > 1) {
-                _prefix.Append(_isLastChild ? "   " : "│  ");
-            }
+        /// <inheritdoc />
+        public IConsoleWriter IncreaseTreeDepth() {
+            _treeHelper.IncreaseTreeDepth();
             return this;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public virtual IConsoleWriter PopLevel() {
-            if (_treeLevel > 0) {
-                _treeLevel--;
-            }
-            if (_prefix.Length > 0) {
-                _prefix.Length -= 3;
-            }
+        /// <inheritdoc />
+        public IConsoleWriter DecreaseTreeDepth() {
+            _treeHelper.DecreaseTreeDepth();
             return this;
         }
 
+        /// <inheritdoc />
+        public IConsoleWriter CloseTree() {
+            _treeHelper.CloseTree();
+            return this;
+        }
     }
 }

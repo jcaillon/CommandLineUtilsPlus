@@ -350,24 +350,29 @@ sakoe st input -b2 s1024"
             Out.Write(": on same line as build");
             Out.WriteOnNewLine("new line after build, very very very long line very very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long line");
 
-            Out.PushLevel().AddNode().WriteOnNewLine("1st step");
-            Out.WriteOnNewLine("(new line)");
-                Out.PushLevel().AddNode().WriteOnNewLine("1st task");
-                    Out.PushLevel().AddNode().WriteOnNewLine("item 1");
-                    Out.AddNode(true).WriteOnNewLine("item 2");
-                    Out.PopLevel();
-                Out.AddNode(true).WriteOnNewLine("2nd task");
-                    Out.PushLevel().AddNode().WriteOnNewLine("item 1");
-                    Out.WriteOnNewLine("(new line)");
-                    Out.AddNode(true).WriteOnNewLine("very very very long line very very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long line");
-                    Out.PopLevel();
-                    Out.PopLevel();
-            Out.AddNode(true).WriteOnNewLine("2nd step");
-                    Out.PushLevel().AddNode().WriteOnNewLine("item 1");
-                    Out.AddNode(true).WriteOnNewLine("item 2");
-                    Out.PopLevel();
+            Out.IncreaseTreeDepth();
+                Out.NewTreeItem().WriteOnNewLine("1st step");
+                Out.WriteOnNewLine("(new line)");
+                Out.IncreaseTreeDepth();
+                    Out.NewTreeItem().WriteOnNewLine("1st task");
+                    Out.IncreaseTreeDepth();
+                        Out.NewTreeItem().WriteOnNewLine("item 1");
+                        Out.NewTreeItem(true).WriteOnNewLine("item 2");
+                    Out.DecreaseTreeDepth();
+                    Out.NewTreeItem(true).WriteOnNewLine("2nd task");
+                    Out.IncreaseTreeDepth();
+                        Out.NewTreeItem().WriteOnNewLine("item 1");
+                        Out.WriteOnNewLine("(new line)");
+                        Out.NewTreeItem(true).WriteOnNewLine("very very very long line very very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long line");
+                    Out.DecreaseTreeDepth();
+                Out.DecreaseTreeDepth();
+                Out.NewTreeItem(true).WriteOnNewLine("2nd step");
+                    Out.IncreaseTreeDepth();
+                        Out.NewTreeItem().WriteOnNewLine("item 1");
+                        Out.NewTreeItem(true).WriteOnNewLine("item 2");
+                    Out.DecreaseTreeDepth();
                 Out.WriteOnNewLine("very very very long line very very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long linevery very very long line");
-                Out.PopLevel();
+            Out.DecreaseTreeDepth();
 
             Out.WriteOnNewLine("back to normal");
 

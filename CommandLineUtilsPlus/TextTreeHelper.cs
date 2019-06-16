@@ -33,33 +33,31 @@ namespace CommandLineUtilsPlus {
         private bool _isLastChild;
 
         /// <summary>
-        ///
+        /// Returns true if a tree is currently being drawn
         /// </summary>
-        /// <returns></returns>
-        public bool IsNode() {
-            if (_addNode) {
-                _addNode = false;
-                return true;
-            }
-            return false;
-        }
+        public bool Active => _treeLevel > 0;
 
         /// <summary>
-        ///
+        /// Returns the prefix that should be prepended to the text to draw the tree.
         /// </summary>
         /// <returns></returns>
-        public string GetNodePrefix() {
+        public string GetTextPrefix() {
             if (_treeLevel == 0) {
                 return null;
             }
+            if (!_addNode) {
+                return GetNewLinePrefix();
+            }
+            _addNode = false;
+
             if (_isLastChild) {
                 return $"{_prefix}└─ ";
             }
             return $"{_prefix}├─ ";
-            }
+        }
 
         /// <summary>
-        ///
+        /// Returns the prefix for new lines in case a word wrap needs to happen on the current line.
         /// </summary>
         /// <returns></returns>
         public string GetNewLinePrefix() {
@@ -70,40 +68,47 @@ namespace CommandLineUtilsPlus {
         }
 
         /// <summary>
-        ///
+        /// Prepare to add a new item for the current depth in the tree.
         /// </summary>
-        /// <param name="isLastChild"></param>
+        /// <param name="isLastItemOfCurrentDepth"></param>
         /// <returns></returns>
-        public virtual TextTreeHelper AddNode(bool isLastChild = false) {
+        public void NewTreeItem(bool isLastItemOfCurrentDepth = false) {
             _addNode = true;
-            _isLastChild = isLastChild;
-            return this;
+            _isLastChild = isLastItemOfCurrentDepth;
         }
 
         /// <summary>
-        ///
+        /// Increase tree depth.
         /// </summary>
         /// <returns></returns>
-        public virtual TextTreeHelper PushLevel() {
+        public void IncreaseTreeDepth() {
             _treeLevel++;
             if (_treeLevel > 1) {
                 _prefix.Append(_isLastChild ? "   " : "│  ");
             }
-            return this;
         }
 
         /// <summary>
-        ///
+        /// Decrease tree depth.
         /// </summary>
         /// <returns></returns>
-        public virtual TextTreeHelper PopLevel() {
+        public void DecreaseTreeDepth() {
             if (_treeLevel > 0) {
                 _treeLevel--;
             }
             if (_prefix.Length > 0) {
                 _prefix.Length -= 3;
             }
-            return this;
+        }
+
+        /// <summary>
+        /// Close the tree, resetting the current depth to 0.
+        /// </summary>
+        public void CloseTree() {
+            _treeLevel = 0;
+            _prefix.Clear();
+            _addNode = false;
+            _isLastChild = false;
         }
 
     }
