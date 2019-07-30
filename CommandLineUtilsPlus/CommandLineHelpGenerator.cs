@@ -78,6 +78,16 @@ namespace CommandLineUtilsPlus {
         public virtual ConsoleColor? DefaultTextColor { get; set; } = null;
 
         /// <summary>
+        /// Writes the full command as a header of the help text.
+        /// </summary>
+        public virtual bool WriteFullCommandAsHeader { get; set; } = true;
+
+        /// <summary>
+        /// Add 2 new lines between the list of options and inherited options.
+        /// </summary>
+        public virtual bool SeparateOptionsAndInheritedOptions { get; set; } = true;
+
+        /// <summary>
         /// The console writer associated with this instance.
         /// </summary>
         protected IConsoleWriter ConsoleWriter => _console;
@@ -114,9 +124,17 @@ namespace CommandLineUtilsPlus {
 
             var fullCommandLine = application.GetFullCommandLine();
 
+            if (WriteFullCommandAsHeader) {
+                WriteSectionTitle("================");
+                WriteSectionTitle(fullCommandLine);
+                WriteSectionTitle("================");
+            }
+
             if (!string.IsNullOrEmpty(application.Description)) {
-                WriteOnNewLine(null);
-                WriteSectionTitle("SYNOPSIS");
+                if (!WriteFullCommandAsHeader) {
+                    WriteOnNewLine(null);
+                    WriteSectionTitle("SYNOPSIS");
+                }
                 WriteOnNewLine(application.Description);
             }
 
@@ -125,7 +143,7 @@ namespace CommandLineUtilsPlus {
             GenerateUsage(fullCommandLine, arguments, options, commands, commandType?.GetProperty("RemainingArgs"));
             GenerateArguments(arguments, firstColumnWidth);
             GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
-            GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, true);
+            GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, !options.All(o => o.Inherited));
             GenerateCommands(application, fullCommandLine, commands, firstColumnWidth);
 
             if (commandType != null) {
@@ -233,8 +251,14 @@ namespace CommandLineUtilsPlus {
         /// </summary>
         protected virtual void GenerateOptions(IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth, bool inheritedOptions) {
             if (visibleOptions.Any()) {
-                WriteOnNewLine(null);
-                WriteSectionTitle(inheritedOptions ? "INHERITED OPTIONS" : "OPTIONS");
+                if (!inheritedOptions) {
+                    WriteOnNewLine(null);
+                    WriteSectionTitle("OPTIONS");
+                } else if (SeparateOptionsAndInheritedOptions) {
+                    WriteOnNewLine(null);
+                    WriteOnNewLine(null);
+                }
+
 
                 foreach (var opt in visibleOptions) {
                     WriteOnNewLine("-");
@@ -276,6 +300,8 @@ namespace CommandLineUtilsPlus {
                 WriteOnNewLine(null);
                 WriteSectionTitle("COMMANDS");
 
+                var hasHighlightedLetters = false;
+
                 foreach (var cmd in visibleCommands.OrderBy(c => c.Name)) {
                     if (cmd.Names.Count() <= 1) {
                         WriteOnNewLine(cmd.Name.PadRight(firstColumnWidth + 2));
@@ -286,6 +312,7 @@ namespace CommandLineUtilsPlus {
                             Write(cmd.Name);
                         } else {
                             WriteLongNameIncludingShortName(cmd.Name, commandAlias, AliasTextColor);
+                            hasHighlightedLetters = true;
                         }
                     }
                     if (cmd.Name.Length > firstColumnWidth) {
@@ -298,6 +325,9 @@ namespace CommandLineUtilsPlus {
 
                 WriteOnNewLine(null);
                 WriteTip($"Tip: run '{thisCommandLine} [command] --{application.OptionHelp.LongName}' for more information about a command.");
+                if (hasHighlightedLetters) {
+                    WriteTip($"Tip: use the highlighted letters as a short alias for a command or option.");
+                }
             }
         }
 
