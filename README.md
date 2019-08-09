@@ -6,7 +6,7 @@ A wrapper around the awesome https://github.com/natemcmaster/CommandLineUtils.
 
 Status | Info
 ------ | --------
-[![Build status](https://ci.appveyor.com/api/projects/status/nnxt2i0fbi3v67v5/branch/master?svg=true)](https://ci.appveyor.com/project/jcaillon/githubupdater) | Windows CI Provided By [AppVeyor][]
+[![Build status](https://ci.appveyor.com/api/projects/status/nnxt2i0fbi3v67v5/branch/master?svg=true)](https://ci.appveyor.com/project/jcaillon/CommandLineUtilsPlus) | Windows CI Provided By [AppVeyor][]
 [![NuGet](https://img.shields.io/nuget/v/Noyacode.CommandLineUtilsPlus.svg)](https://www.nuget.org/packages/Noyacode.CommandLineUtilsPlus/) | Latest Nuget Package
 [![GitHub release](https://img.shields.io/github/release/jcaillon/CommandLineUtilsPlus.svg)](https://github.com/jcaillon/CommandLineUtilsPlus/releases/latest) | Latest github release
 [![Total downloads](https://img.shields.io/github/downloads/jcaillon/CommandLineUtilsPlus/total.svg)](https://github.com/jcaillon/CommandLineUtilsPlus/releases) | Total download
