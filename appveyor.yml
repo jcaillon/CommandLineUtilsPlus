@@ -6,14 +6,14 @@
 version: 1.0.{build}-{branch}
 
 # branches to build
-branches:
-  # whitelist
-  only:
-    - master
+# branches:
+#   # whitelist
+#   only:
+#     - master
 
-  # blacklist
-  except:
-    - gh-pages
+#   # blacklist
+#   except:
+#     - gh-pages
 
 # Skipping commits with particular message or from specific user
 skip_commits:
