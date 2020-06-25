@@ -282,7 +282,7 @@ sakoe st input -b2 s1024"
         [Option("-c|--create", "Create the response file", CommandOptionType.NoValue)]
         public bool Create { get; }
 
-        [Option("-f", "List of files.", CommandOptionType.MultipleValue)]
+        [Option("-f|--file", "List of files.", CommandOptionType.MultipleValue)]
         public string[] Files { get; }
 
         protected override int ExecuteCommand(CommandLineApplication app, IConsole console) {

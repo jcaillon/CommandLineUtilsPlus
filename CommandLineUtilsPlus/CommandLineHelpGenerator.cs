@@ -24,6 +24,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
@@ -34,6 +35,11 @@ namespace CommandLineUtilsPlus {
     /// A class that helps generate the usage of a command line application.
     /// </summary>
     public class CommandLineHelpGenerator : ICommandLineHelpGenerator {
+
+        /// <summary>
+        /// Whether or not the --help option should be described in the help of a command.
+        /// </summary>
+        public virtual bool ShowHelpOptionInUsage { get; set; } = false;
 
         /// <summary>
         /// The base indentation to apply to the whole help text.
@@ -117,7 +123,11 @@ namespace CommandLineUtilsPlus {
         /// <param name="application"></param>
         protected virtual void GenerateCommandHelp(CommandLineApplication application) {
             var arguments = application.Arguments.Where(a => a.ShowInHelpText).ToList();
-            var options = application.GetOptions().Where(o => o.ShowInHelpText).ToList();
+            var allOptions = application.GetOptions().Where(o => o.ShowInHelpText);
+            if (!ShowHelpOptionInUsage) {
+                allOptions = allOptions.Where(o => !AExecutionCommand.HelpLongName.Equals(o.LongName));
+            }
+            var options = allOptions.ToList();
             var commands = application.Commands.Where(c => c.ShowInHelpText).ToList();
 
             var firstColumnWidth = GetFirstColumnWidth(application, arguments, options, commands);
@@ -142,8 +152,17 @@ namespace CommandLineUtilsPlus {
 
             GenerateUsage(fullCommandLine, arguments, options, commands, commandType?.GetProperty("RemainingArgs"));
             GenerateArguments(arguments, firstColumnWidth);
-            GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
-            GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, !options.All(o => o.Inherited));
+            var hasHighlightedLetters = GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
+            hasHighlightedLetters = hasHighlightedLetters || GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, !options.All(o => o.Inherited));
+
+            if (options.Any()) {
+                WriteOnNewLine(null);
+                WriteTip($"Tip: you can set an option --opt using an environment var named {application.GetRootCommandLineApplication()?.Name?.ToUpper()}_OPT.");
+                if (hasHighlightedLetters) {
+                    WriteTip($"Tip: use the highlighted letters as a short alias for an option.");
+                }
+            }
+
             GenerateCommands(application, fullCommandLine, commands, firstColumnWidth);
 
             if (commandType != null) {
@@ -193,7 +212,7 @@ namespace CommandLineUtilsPlus {
             var commandColumnWidth = commands.Count == 0 ? 0 : commands.Max(c => c.Name?.Length ?? 0);
 
             var firstColumnWidth = Math.Max(optionColumnWidth, commandColumnWidth);
-            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name.IndexOf('<') < 0 ? a.Name.Length : a.Name.Length - 2));
+            firstColumnWidth = Math.Max(firstColumnWidth, arguments.Count == 0 ? 0 : arguments.Max(a => a.Name?.IndexOf('<') < 0 ? a.Name.Length : a.Name?.Length ?? 0 - 2));
             firstColumnWidth = Math.Max(firstColumnWidth, MinimumFirstColumnWidth);
             firstColumnWidth = Math.Min(firstColumnWidth, MaximumFirstColumnWidth);
 
@@ -212,7 +231,7 @@ namespace CommandLineUtilsPlus {
                 Write(" [options]");
             }
             foreach (var argument in visibleArguments) {
-                Write($" {(argument.Name.IndexOf('<') < 0 ? $"<{argument.Name}>" : argument.Name)}");
+                Write($" {(argument.Name?.IndexOf('<') < 0 ? $"<{argument.Name}>" : argument.Name)}");
             }
             if (visibleCommands.Any()) {
                 Write(" [command]");
@@ -235,9 +254,9 @@ namespace CommandLineUtilsPlus {
                 WriteSectionTitle("ARGUMENTS");
 
                 foreach (var arg in visibleArguments) {
-                    var name = arg.Name.Replace("<", "").Replace(">", "");
-                    WriteOnNewLine(name.PadRight(firstColumnWidth + 2));
-                    if (name.Length > firstColumnWidth) {
+                    var name = arg.Name?.Replace("<", "").Replace(">", "");
+                    WriteOnNewLine((name ?? "").PadRight(firstColumnWidth + 2));
+                    if (name?.Length > firstColumnWidth) {
                         WriteOnNewLine(arg.Description, padding: firstColumnWidth + 2);
                     } else {
                         Write(arg.Description, padding: firstColumnWidth + 2);
@@ -249,7 +268,9 @@ namespace CommandLineUtilsPlus {
         /// <summary>
         /// Generate the lines that show information about options
         /// </summary>
-        protected virtual void GenerateOptions(IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth, bool inheritedOptions) {
+        protected virtual bool GenerateOptions(IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth, bool inheritedOptions) {
+            var hasHighlightedLetters = false;
+
             if (visibleOptions.Any()) {
                 if (!inheritedOptions) {
                     WriteOnNewLine(null);
@@ -268,9 +289,10 @@ namespace CommandLineUtilsPlus {
                     } else {
                         Write("-", AliasTextColor);
                         WriteLongNameIncludingShortName(opt.LongName, opt.ShortName, AliasTextColor);
+                        hasHighlightedLetters = true;
                     }
 
-                    var actualFirstColumnWidth = opt.LongName.Length + 2;
+                    var actualFirstColumnWidth = (opt.LongName ?? "").Length + 2;
 
                     if (!string.IsNullOrEmpty(opt.ValueName)) {
                         var valueName = opt.OptionType == CommandOptionType.SingleOrNoValue ? $"[:{opt.ValueName.Replace("_", " ")}]" : $" <{opt.ValueName.Replace("_", " ")}>";
@@ -290,6 +312,8 @@ namespace CommandLineUtilsPlus {
                     }
                 }
             }
+
+            return hasHighlightedLetters;
         }
 
         /// <summary>
@@ -304,7 +328,7 @@ namespace CommandLineUtilsPlus {
 
                 foreach (var cmd in visibleCommands.OrderBy(c => c.Name)) {
                     if (cmd.Names.Count() <= 1) {
-                        WriteOnNewLine(cmd.Name.PadRight(firstColumnWidth + 2));
+                        WriteOnNewLine((cmd.Name ?? "").PadRight(firstColumnWidth + 2));
                     } else {
                         var commandAlias = cmd.Names.Skip(1).FirstOrDefault();
                         WriteOnNewLine(null);
@@ -315,18 +339,18 @@ namespace CommandLineUtilsPlus {
                             hasHighlightedLetters = true;
                         }
                     }
-                    if (cmd.Name.Length > firstColumnWidth) {
+                    if (cmd.Name?.Length > firstColumnWidth) {
                         WriteOnNewLine(cmd.Description, padding: firstColumnWidth + 2);
                     } else {
-                        Write(new string(' ', firstColumnWidth - cmd.Name.Length + 2));
+                        Write(new string(' ', (firstColumnWidth - (cmd.Name ?? "").Length) + 2));
                         Write(cmd.Description, padding: firstColumnWidth + 2);
                     }
                 }
 
                 WriteOnNewLine(null);
-                WriteTip($"Tip: run '{thisCommandLine} [command] --{application.OptionHelp.LongName}' for more information about a command.");
+                WriteTip($"Tip: run '{thisCommandLine} [command] --{application.OptionHelp?.LongName}' for more information about a command.");
                 if (hasHighlightedLetters) {
-                    WriteTip($"Tip: use the highlighted letters as a short alias for a command or option.");
+                    WriteTip("Tip: use the highlighted letters as a short alias for a command.");
                 }
             }
         }

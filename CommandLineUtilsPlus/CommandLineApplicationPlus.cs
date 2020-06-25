@@ -60,6 +60,7 @@ namespace CommandLineUtilsPlus {
                     app.Conventions.AddConvention(new CommandLoggerConvention(consoleLogger));
                     app.Conventions.AddConvention(new DefaultOptionsConvention());
                     app.Conventions.AddConvention(new OptionsValuesFromEnvironmentVariablesConvention());
+                    app.Conventions.AddConvention(new EnforceNamingConvention());
                     return app.Execute(args);
                 }
             } catch (Exception ex) {
@@ -71,7 +72,7 @@ namespace CommandLineUtilsPlus {
                     if (ex is UnrecognizedCommandParsingException unrecognizedCommandParsingException && unrecognizedCommandParsingException.NearestMatches.Any()) {
                         log.Info($"Did you mean {unrecognizedCommandParsingException.NearestMatches.First()}?");
                     }
-                    log.Info($"Specify {AExecutionCommand.HelpLongName} for a list of available options and commands.");
+                    log.Info($"Specify --{AExecutionCommand.HelpLongName} for a list of available options and commands.");
                 } else {
                     log.Error(ex.Message, ex);
                 }

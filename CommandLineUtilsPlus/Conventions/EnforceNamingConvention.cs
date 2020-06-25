@@ -18,37 +18,41 @@
 // ========================================================================
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Conventions;
+using McMaster.Extensions.CommandLineUtils.Validation;
 
 namespace CommandLineUtilsPlus.Conventions {
 
-    /// <inheritdoc />
-    public class CommandLoggerConvention : IConvention {
-
-        private ICommandLineConsoleLogger _consoleLogger;
-
-        //private CommandLineApplication _rootApplication;
-
-        /// <summary>
-        /// New instance of <see cref="CommandLoggerConvention"/>
-        /// </summary>
-        /// <param name="consoleLogger"></param>
-        public CommandLoggerConvention(ICommandLineConsoleLogger consoleLogger) {
-            _consoleLogger = consoleLogger;
-        }
+    /// <summary>
+    /// This convention enforces the usage of Name for each command/argument and LongName for each option
+    /// </summary>
+    public class EnforceNamingConvention : IConvention {
 
         /// <inheritdoc />
         public void Apply(ConventionContext context) {
-            if (context.ModelAccessor == null) {
+            if (context.ModelType == null) {
                 return;
             }
 
-            if (context.ModelAccessor.GetModel() is ACommand aCommand) {
-                aCommand.SetConsoleLogger(_consoleLogger);
+            if (context.Application.Arguments.Any(a => string.IsNullOrEmpty(a.Name))) {
+                throw new ModelException($"An argument name is not defined for class {context.ModelType}.");
+            }
+
+            if (context.Application.Options.Any(a => string.IsNullOrEmpty(a.LongName))) {
+                throw new ModelException($"An option long name is not defined for class {context.ModelType}.");
+            }
+
+            if (string.IsNullOrEmpty(context.Application.Name)) {
+                throw new ModelException($"A command name is not defined for class {context.ModelType}.");
+            }
+
+            foreach (var command in context.Application.Arguments.Where(a => string.IsNullOrEmpty(a.Name))) {
             }
         }
     }

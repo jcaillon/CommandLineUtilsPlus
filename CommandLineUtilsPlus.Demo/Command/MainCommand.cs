@@ -31,9 +31,10 @@ namespace CommandLineUtilsPlus.Demo.Command {
         FullName = "THE DEMO APP",
         Description = "A demo app for the CommandLineUtilsPlus library."
     )]
-    [HelpOption("-h|-?|" + AExecutionCommand.HelpLongName, Description = "Show this help text.", Inherited = true)]
+    [HelpOption("-h|-?|--" + AExecutionCommand.HelpLongName, Description = "Show this help text.", Inherited = true)]
     [Subcommand(typeof(ShowVersionCommand))]
     [Subcommand(typeof(SelfTestCommand))]
+    [Subcommand(typeof(MyManCommand))]
     [CommandAdditionalHelpText(nameof(GetAdditionalHelpText))]
     public class MainCommand : AParentCommand {
         public static void GetAdditionalHelpText(IHelpWriter writer, CommandLineApplication application, int firstColumnWidth) {

@@ -47,7 +47,7 @@ namespace CommandLineUtilsPlus.Command {
         /// <summary>
         /// Long name for the help option.
         /// </summary>
-        public const string HelpLongName = "--help";
+        public const string HelpLongName = "help";
 
         internal const string VerbosityShortName = "vb";
 
@@ -207,7 +207,7 @@ namespace CommandLineUtilsPlus.Command {
             }
             var faultyMembers = string.Join(", ", r.MemberNames);
             Log.Error($"{(faultyMembers.Length > 0 ? $"{faultyMembers} : ": "")}{r.ErrorMessage}");
-            Log.Info($"Specify {HelpLongName} for a list of available options and commands.");
+            Log.Info($"Specify --{HelpLongName} for a list of available options and commands.");
             Log.Fatal($"Exit code {FatalExitCode}");
             Out.WriteOnNewLine(null);
             return FatalExitCode;

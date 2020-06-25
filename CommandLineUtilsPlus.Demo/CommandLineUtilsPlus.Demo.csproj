@@ -7,7 +7,7 @@
     <!-- Type or assembly to produce Exe/Library -->
     <ProjOutputType>Exe</ProjOutputType>
     <!-- The name of the assembly .dll/.exe -->
-    <ProjAssemblyName>CommandLineUtilsPlus.Demo</ProjAssemblyName>
+    <ProjAssemblyName>demoapp</ProjAssemblyName>
     <!-- major.minor.patch[.build][-pre-release-tag] -->
     <ProjVersion>1.0.0-beta</ProjVersion>
     <ProjFileDescription>Demo app for CommandLineUtilsPlus</ProjFileDescription>
