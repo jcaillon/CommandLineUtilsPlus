@@ -19,11 +19,17 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security;
 using System.Threading;
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Console.ProgressBar;
+using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace CommandLineUtilsPlus.Command {
@@ -43,12 +49,12 @@ namespace CommandLineUtilsPlus.Command {
         /// </summary>
         public const string HelpLongName = "--help";
 
-        private const string VerbosityShortName = "-vb";
+        internal const string VerbosityShortName = "vb";
 
         /// <summary>
         /// Allows to specify the verbosity threshold above which to start logging messages.
         /// </summary>
-        [Option(VerbosityShortName + "|--verbosity <level>", "Sets the verbosity of this command line tool. To get the 'raw output' of a command (without displaying the log), you can set the verbosity to `none`. Specifying this option without a level value sets the verbosity to `debug`. Not specifying the option defaults to `info`. Optionally, set the verbosity level for all commands using the environment variable `CLI_VERBOSITY`.", CommandOptionType.SingleOrNoValue, Inherited = true)]
+        [Option("-" + VerbosityShortName + "|--verbosity <level>", "Sets the verbosity of this command line tool. To get the 'raw output' of a command (without displaying the log), you can set the verbosity to `none`. Specifying this option without a level value sets the verbosity to `debug`. Not specifying the option defaults to `info`.", CommandOptionType.SingleOrNoValue, Inherited = true)]
         public (bool HasValue, ConsoleLogThreshold? Value) VerbosityThreshold { get; set; }
 
         /// <summary>
@@ -112,6 +118,8 @@ namespace CommandLineUtilsPlus.Command {
         /// <param name="console"></param>
         protected virtual void ExecutePostCommand(CommandLineApplication app, IConsole console) { }
 
+        internal List<string> DebugLogFromSetOptionValueFromEnvironmentVariable { get; set; } = new List<string>();
+
         private int _numberOfCancelKeyPress;
 
         private object _lock = new object();
@@ -126,12 +134,6 @@ namespace CommandLineUtilsPlus.Command {
             Con = console as IConsoleInterface;
             HelpWriter = app.HelpTextGenerator as IHelpWriter;
 
-            // use system default verbosity?
-            var verbosityEnvVar = Environment.GetEnvironmentVariable("CLI_VERBOSITY");
-            if ((!VerbosityThreshold.HasValue || VerbosityThreshold.Value == null) && !string.IsNullOrEmpty(verbosityEnvVar) && Enum.TryParse(verbosityEnvVar, true, out ConsoleLogThreshold threshold)) {
-                VerbosityThreshold = (true, threshold);
-            }
-
             // set up the console logger
             ConsoleLogger.LogTheshold = Verbosity;
             ConsoleLogger.ProgressBarDisplayMode = ProgressBarDisplayMode ?? ConsoleProgressBarDisplayMode.On;
@@ -142,6 +144,12 @@ namespace CommandLineUtilsPlus.Command {
                 }
                 ConsoleLogger.LogOutputFilePath = logFilePath;
             }
+
+            // log stuff that might have happened during option parsing (set option from environment variable).
+            foreach (var logLine in DebugLogFromSetOptionValueFromEnvironmentVariable) {
+                Log?.Debug(logLine);
+            }
+            DebugLogFromSetOptionValueFromEnvironmentVariable.Clear();
 
             console.CancelKeyPress += ConsoleOnCancelKeyPress;
 
@@ -170,7 +178,7 @@ namespace CommandLineUtilsPlus.Command {
             } catch (Exception e) {
                 Log.Error(e.Message, e);
                 if (Verbosity > ConsoleLogThreshold.Debug) {
-                    Log.Info($"Get more details on this error by switching to debug verbosity: {VerbosityShortName}.");
+                    Log.Info($"Get more details on this error by switching to debug verbosity: -{VerbosityShortName}.");
                 }
                 if (e is CommandException ce) {
                     exitCode = ce.ExitCode;
@@ -187,26 +195,30 @@ namespace CommandLineUtilsPlus.Command {
         }
 
         /// <summary>
-        /// Returns the path to the default log file.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual string GetLogFilePathDefaultValue() {
-            return Path.Combine(Directory.GetCurrentDirectory(), "app.log");
-        }
-
-        /// <summary>
         /// Called when the options of the command line are not validated correctly.
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
         // ReSharper disable once UnusedMember.Global
         public virtual int OnValidationError(ValidationResult r) {
+            // log stuff that might have happened during option parsing (set option from environment variable).
+            foreach (var logLine in DebugLogFromSetOptionValueFromEnvironmentVariable) {
+                Log?.Info(logLine);
+            }
             var faultyMembers = string.Join(", ", r.MemberNames);
             Log.Error($"{(faultyMembers.Length > 0 ? $"{faultyMembers} : ": "")}{r.ErrorMessage}");
             Log.Info($"Specify {HelpLongName} for a list of available options and commands.");
             Log.Fatal($"Exit code {FatalExitCode}");
             Out.WriteOnNewLine(null);
             return FatalExitCode;
+        }
+
+        /// <summary>
+        /// Returns the path to the default log file.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GetLogFilePathDefaultValue() {
+            return Path.Combine(Directory.GetCurrentDirectory(), "app.log");
         }
 
         /// <summary>
@@ -255,7 +267,7 @@ namespace CommandLineUtilsPlus.Command {
                     }
                     _numberOfCancelKeyPress++;
                     Con.ResetColor();
-                    CancellationSource.Cancel();
+                    CancellationSource?.Cancel();
                     if (_numberOfCancelKeyPress < 4) {
                         e.Cancel = true;
                     }
@@ -266,7 +278,7 @@ namespace CommandLineUtilsPlus.Command {
         }
 
         /// <summary>
-        /// Stops the program execution until a condition is fulfilled or CTRL+C is pressed or CTRL+D is pressed.
+        /// Pause the program execution until a condition is fulfilled or CTRL+C is pressed or CTRL+D is pressed.
         /// </summary>
         /// <param name="condition"></param>
         /// <param name="messageActionOnCtrlC"></param>
@@ -319,6 +331,49 @@ namespace CommandLineUtilsPlus.Command {
                 Con.CursorVisible = false;
                 _numberOfCancelKeyPress = numberOfCancelKeyPress;
             }
+        }
+
+        /// <summary>
+        /// Prompt the user for a integer response.
+        /// </summary>
+        /// <remarks>TODO needs to be redone</remarks>
+        /// <param name="question"></param>
+        /// <returns></returns>
+        protected int PromptInteger(string question) {
+            Out.WriteOnNewLine(" ");
+            return Prompt.GetInt(question);
+        }
+
+        /// <summary>
+        /// Prompt the user for a string response.
+        /// </summary>
+        /// <remarks>TODO needs to be redone</remarks>
+        /// <param name="question"></param>
+        /// <returns></returns>
+        protected string PromptString(string question) {
+            Out.WriteOnNewLine(" ");
+            return Prompt.GetString(question);
+        }
+
+        /// <summary>
+        /// Prompt the user for a password response.
+        /// </summary>
+        /// <remarks>TODO needs to be redone</remarks>
+        /// <param name="question"></param>
+        /// <returns></returns>
+        protected string PromptPassword(string question) {
+            Out.WriteOnNewLine(" ");
+            return Prompt.GetPassword(question);
+        }
+
+        /// <summary>
+        /// Prompt the user for a password response.
+        /// </summary>
+        /// <param name="question"></param>
+        /// <returns></returns>
+        protected SecureString PromptPasswordAsSecureString(string question) {
+            Out.WriteOnNewLine(" ");
+            return Prompt.GetPasswordAsSecureString(question);
         }
     }
 

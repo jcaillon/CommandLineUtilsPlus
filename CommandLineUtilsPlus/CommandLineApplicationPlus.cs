@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Console;
+using CommandLineUtilsPlus.Conventions;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.HelpText;
 
@@ -35,7 +36,7 @@ namespace CommandLineUtilsPlus {
     public class CommandLineApplicationPlus<TModel> : CommandLineApplication<TModel> where TModel : class {
 
         /// <inheritdoc />
-        public CommandLineApplicationPlus(IHelpTextGenerator helpTextGenerator, IConsole console, string workingDirectory, bool throwOnUnexpectedArg) : base(helpTextGenerator, console, workingDirectory, throwOnUnexpectedArg) {
+        public CommandLineApplicationPlus(IHelpTextGenerator helpTextGenerator, IConsole console, string workingDirectory) : base(helpTextGenerator, console, workingDirectory) {
         }
 
         /// <inheritdoc />
@@ -54,9 +55,11 @@ namespace CommandLineUtilsPlus {
             ICommandLineHelpGenerator helpGenerator = helper?.Invoke(consoleLogger) ?? new CommandLineHelpGenerator(consoleLogger);
             try {
                 console.CursorVisible = false;
-                using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, Directory.GetCurrentDirectory(), true)) {
+                using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, Directory.GetCurrentDirectory())) {
                     app.Conventions.UseDefaultConventions();
-                    app.Conventions.AddConvention(new CommandLineApplicationConvention(consoleLogger));
+                    app.Conventions.AddConvention(new CommandLoggerConvention(consoleLogger));
+                    app.Conventions.AddConvention(new DefaultOptionsConvention());
+                    app.Conventions.AddConvention(new OptionsValuesFromEnvironmentVariablesConvention());
                     return app.Execute(args);
                 }
             } catch (Exception ex) {

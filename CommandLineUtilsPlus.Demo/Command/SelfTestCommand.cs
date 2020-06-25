@@ -109,9 +109,9 @@ nibh.") { Align = Align.Right ,Stroke = LineThickness.None },
     }
 
     [Command(
-        "wrap", "wr",
-        Description = "Subcommand that shows the word wrap",
-        ExtendedHelpText = "sakoe selftest wrap"
+        "result", "rs",
+        Description = "Subcommand that shows the write result",
+        ExtendedHelpText = "sakoe selftest result"
     )]
     internal class WrapSelfTestCommand : ADemoExecutionCommand {
 
@@ -321,17 +321,17 @@ sakoe st input -b2 s1024"
 2 - Fake Docker
 3 - Fake npm
 > ";
-            var res = Prompt.GetInt(prompt);
+            var res = PromptInteger(prompt);
 
             Log.Info($"= {res}");
 
-            var args = Prompt.GetString("Enter some arguments >");
+            var args = PromptString("Enter some arguments >");
 
             foreach (var arg in args) {
                 Log.Info($"-> {arg}");
             }
 
-            var pwd = Prompt.GetPassword("Password: ");
+            var pwd = PromptPassword("Password: ");
 
             Log.Info($"password = {pwd}");
 
@@ -353,6 +353,7 @@ sakoe st input -b2 s1024"
             Out.IncreaseTreeDepth();
                 Out.NewTreeItem().WriteOnNewLine("1st step");
                 Out.WriteOnNewLine("(new line)");
+                Log?.Info("fffff");
                 Out.IncreaseTreeDepth();
                     Out.NewTreeItem().WriteOnNewLine("1st task");
                     Out.IncreaseTreeDepth();
@@ -405,7 +406,7 @@ sakoe st input -b2 s1024"
             Out.WriteResultOnNewLine("Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", ConsoleColor.Green);
             Out.WriteResult("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", ConsoleColor.Green);
 
-            Log.Info("Write as normal with indentation = 2 (with word wrap)");
+            Log.Info("Write as normal with indentation = 2 (with word wrap + green/white)");
             Out.WriteOnNewLine("Lorem Ipsum is simply dummy text of the printing and typesetting industry.\nLorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", ConsoleColor.Green, 2);
             Out.Write("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", indentation: 2);
 

@@ -19,40 +19,27 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using CommandLineUtilsPlus.Command;
+using CommandLineUtilsPlus.Extension;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Conventions;
+using McMaster.Extensions.CommandLineUtils.Validation;
 
-namespace CommandLineUtilsPlus {
+namespace CommandLineUtilsPlus.Conventions {
 
     /// <inheritdoc />
-    public class CommandLineApplicationConvention : IConvention {
-
-        private ICommandLineConsoleLogger _consoleLogger;
-
-        /// <summary>
-        /// New instance of <see cref="CommandLineApplicationConvention"/>
-        /// </summary>
-        /// <param name="consoleLogger"></param>
-        public CommandLineApplicationConvention(ICommandLineConsoleLogger consoleLogger) {
-            _consoleLogger = consoleLogger;
-        }
+    public class DefaultOptionsConvention : IConvention {
 
         /// <inheritdoc />
         public void Apply(ConventionContext context) {
-            if (context.ModelType == null) {
-                return;
-            }
-
-            var aCommand = context.ModelAccessor.GetModel() as ACommand;
-            aCommand?.SetConsoleLogger(_consoleLogger);
-
             context.Application.UsePagerForHelpText = false;
             context.Application.ClusterOptions = false;
             context.Application.OptionsComparison = StringComparison.CurrentCultureIgnoreCase;
             context.Application.ResponseFileHandling = ResponseFileHandling.ParseArgsAsLineSeparated;
             context.Application.AllowArgumentSeparator = true;
             context.Application.MakeSuggestionsInErrorMessage = true;
+            context.Application.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
         }
     }
 }

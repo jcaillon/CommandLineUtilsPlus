@@ -1,3 +1,3 @@
 ## Improvements
 
-- Fix the behavior for .net core application
+- Added new convention to set options using env variables

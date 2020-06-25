@@ -1,4 +1,5 @@
 #region header
+
 // ========================================================================
 // Copyright (c) 2019 - Julien Caillon (julien.caillon@gmail.com)
 // This file (Utils.cs) is part of CommandLineUtilsPlus.
@@ -16,15 +17,17 @@
 // You should have received a copy of the GNU General Public License
 // along with CommandLineUtilsPlus. If not, see <http://www.gnu.org/licenses/>.
 // ========================================================================
+
 #endregion
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace CommandLineUtilsPlus {
     internal static class StaticUtilities {
-
 #if !WINDOWSONLYBUILD
         private static bool? _isRuntimeWindowsPlatform;
 #endif
@@ -62,6 +65,73 @@ namespace CommandLineUtilsPlus {
         /// <returns></returns>
         public static string PrettyQuote(this string text) {
             return $"`{text}`";
+        }
+
+        public static void SetPropertyValue(PropertyInfo prop, object instance, object value)
+        {
+            var setter = prop.GetSetMethod(nonPublic: true);
+            if (setter != null)
+            {
+                setter.Invoke(instance, new object[] { value });
+            }
+            else
+            {
+                var backingFieldName = string.Format("<{0}>k__BackingField", prop.Name);
+                var backingField = prop.DeclaringType.GetTypeInfo().GetDeclaredField(backingFieldName);
+                if (backingField == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not find a way to set {prop.DeclaringType.FullName}.{prop.Name}");
+                }
+                backingField.SetValue(instance, value);
+            }
+        }
+
+        public static string ToKebabCase(this string str) {
+            if (string.IsNullOrEmpty(str)) {
+                return str;
+            }
+
+            var sb = new StringBuilder();
+            var i = 0;
+            var addDash = false;
+
+            for (; i < str.Length; i++) {
+                var ch = str[i];
+                if (!char.IsLetterOrDigit(ch)) {
+                    continue;
+                }
+
+                addDash = !char.IsUpper(ch);
+                sb.Append(char.ToLowerInvariant(ch));
+                i++;
+                break;
+            }
+
+            for (; i < str.Length; i++) {
+                var ch = str[i];
+                if (char.IsUpper(ch)) {
+                    if (addDash) {
+                        addDash = false;
+                        sb.Append('-');
+                    }
+
+                    sb.Append(char.ToLowerInvariant(ch));
+                } else if (char.IsLetterOrDigit(ch)) {
+                    addDash = true;
+                    sb.Append(ch);
+                } else {
+                    addDash = false;
+                    sb.Append('-');
+                }
+            }
+
+            // trim trailing slashes
+            while (sb.Length > 0 && sb[sb.Length - 1] == '-') {
+                sb.Remove(sb.Length - 1, 1);
+            }
+
+            return sb.ToString();
         }
     }
 }

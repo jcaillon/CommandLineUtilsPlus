@@ -47,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="PackageReferences">
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
   </ItemGroup>
 
   <!-- Extra targets -->
