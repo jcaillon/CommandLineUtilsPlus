@@ -86,7 +86,6 @@ deploy:
       secure: 9qtk8/Z4Se2QTvv/6BD/0n4T2qeazzY/a7X5iiBG4aGXxFdijRprOjQ6t4D/3tE0
     artifact: nupkg
     on:
-      branch: master
       APPVEYOR_REPO_TAG: true
 
   - provider: GitHub
@@ -101,7 +100,6 @@ deploy:
     draft: true
     prerelease: true
     on:
-      branch: master
       APPVEYOR_REPO_TAG: true
 
 #---------------------------------#
