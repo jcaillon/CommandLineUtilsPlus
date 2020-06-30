@@ -61,9 +61,11 @@ namespace CommandLineUtilsPlus.Conventions {
             if (environmentVariables.Contains(varName)) {
                 _command?.DebugLogFromSetOptionValueFromEnvironmentVariable.Add($"Setting option --{option.LongName} with the value of the environment variable {varName}.");
                 option.TryParse(environmentVariables[varName] as string);
-                var parser = _application.ValueParsers.GetParser(_property.PropertyType);
-                var value = parser.Parse(option.LongName, environmentVariables[varName] as string, CultureInfo.CurrentCulture);
-                StaticUtilities.SetPropertyValue(_property, _command, value);
+                if (_property != null) {
+                    var parser = _application.ValueParsers.GetParser(_property.PropertyType);
+                    var value = parser.Parse(option.LongName, environmentVariables[varName] as string, CultureInfo.CurrentCulture);
+                    StaticUtilities.SetPropertyValue(_property, _command, value);
+                }
             }
             return ValidationResult.Success;
         }

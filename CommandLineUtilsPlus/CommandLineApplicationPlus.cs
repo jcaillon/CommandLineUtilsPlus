@@ -35,8 +35,20 @@ namespace CommandLineUtilsPlus {
     /// <typeparam name="TModel"></typeparam>
     public class CommandLineApplicationPlus<TModel> : CommandLineApplication<TModel> where TModel : class {
 
+        /// <summary>
+        /// The console used for this CLI.
+        /// </summary>
+        protected readonly CommandLineConsoleInterface Console;
+
+        /// <summary>
+        /// The console logger used for this CLI.
+        /// </summary>
+        protected readonly ICommandLineConsoleLogger ConsoleLogger;
+
         /// <inheritdoc />
-        public CommandLineApplicationPlus(IHelpTextGenerator helpTextGenerator, IConsole console, string workingDirectory) : base(helpTextGenerator, console, workingDirectory) {
+        protected CommandLineApplicationPlus(IHelpTextGenerator helpTextGenerator, CommandLineConsoleInterface console, ICommandLineConsoleLogger consoleLogger, string workingDirectory) : base(helpTextGenerator, console, workingDirectory) {
+            Console = console;
+            ConsoleLogger = consoleLogger;
         }
 
         /// <inheritdoc />
@@ -51,39 +63,69 @@ namespace CommandLineUtilsPlus {
         /// <returns></returns>
         public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleWriter, ICommandLineHelpGenerator> helper = null) {
             var console = new CommandLineConsoleInterface();
-            ICommandLineConsoleLogger consoleLogger = logger?.Invoke(console) ?? new CommandLineConsoleLogger(console);
-            ICommandLineHelpGenerator helpGenerator = helper?.Invoke(consoleLogger) ?? new CommandLineHelpGenerator(consoleLogger);
+            var consoleLogger = logger?.Invoke(console) ?? new CommandLineConsoleLogger(console);
+            var helpGenerator = helper?.Invoke(consoleLogger) ?? new CommandLineHelpGenerator(consoleLogger);
             try {
-                console.CursorVisible = false;
-                using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, Directory.GetCurrentDirectory())) {
-                    app.Conventions.UseDefaultConventions();
-                    app.Conventions.AddConvention(new CommandLoggerConvention(consoleLogger));
-                    app.Conventions.AddConvention(new DefaultOptionsConvention());
-                    app.Conventions.AddConvention(new OptionsValuesFromEnvironmentVariablesConvention());
-                    app.Conventions.AddConvention(new EnforceNamingConvention());
-                    return app.Execute(args);
+                using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, consoleLogger, Directory.GetCurrentDirectory())) {
+                    return app.ExecuteCommandInternal(args);
                 }
             } catch (Exception ex) {
-                var log = consoleLogger;
-                log.LogTheshold = ConsoleLogThreshold.Debug;
-
-                if (ex is CommandParsingException) {
-                    log.Error(ex.Message);
-                    if (ex is UnrecognizedCommandParsingException unrecognizedCommandParsingException && unrecognizedCommandParsingException.NearestMatches.Any()) {
-                        log.Info($"Did you mean {unrecognizedCommandParsingException.NearestMatches.First()}?");
-                    }
-                    log.Info($"Specify --{AExecutionCommand.HelpLongName} for a list of available options and commands.");
-                } else {
-                    log.Error(ex.Message, ex);
-                }
-
-                log.Fatal($"Exit code {AExecutionCommand.FatalExitCode}");
-                log.WriteOnNewLine(null);
+                consoleLogger.LogTheshold = ConsoleLogThreshold.Debug;
+                consoleLogger.Error(ex.Message, ex);
+                consoleLogger.Fatal($"Exit code {AExecutionCommand.FatalExitCode}");
+                consoleLogger.WriteOnNewLine(null);
                 return AExecutionCommand.FatalExitCode;
             } finally {
                 consoleLogger.Dispose();
-                console.CursorVisible = true;
             }
+        }
+
+        /// <summary>
+        /// The entry point for the command line application.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        protected virtual int ExecuteCommandInternal(string[] args) {
+            try {
+                Console.CursorVisible = false;
+                ConfigureApp();
+                return Execute(args);
+            } catch (Exception ex) {
+                ConsoleLogger.LogTheshold = ConsoleLogThreshold.Debug;
+
+                if (ex is CommandParsingException) {
+                    ConsoleLogger.Error(ex.Message);
+                    if (ex is UnrecognizedCommandParsingException unrecognizedCommandParsingException && unrecognizedCommandParsingException.NearestMatches.Any()) {
+                        ConsoleLogger.Info($"Did you mean {unrecognizedCommandParsingException.NearestMatches.First()}?");
+                    }
+                    ConsoleLogger.Info($"Specify --{AExecutionCommand.HelpLongName} for a list of available options and commands.");
+                } else {
+                    ConsoleLogger.Error(ex.Message, ex);
+                }
+
+                ConsoleLogger.Fatal($"Exit code {AExecutionCommand.FatalExitCode}");
+                ConsoleLogger.WriteOnNewLine(null);
+                return AExecutionCommand.FatalExitCode;
+            } finally {
+                Console.CursorVisible = true;
+            }
+        }
+
+        /// <summary>
+        /// Configure the application before executing it.
+        /// </summary>
+        protected virtual void ConfigureApp() {
+            Conventions.UseDefaultConventions();
+            Conventions.AddConvention(new CommandLoggerConvention(ConsoleLogger));
+            Conventions.AddConvention(new DefaultOptionsConvention());
+            Conventions.AddConvention(new OptionsValuesFromEnvironmentVariablesConvention());
+            Conventions.AddConvention(new EnforceNamingConvention());
+        }
+
+        /// <inheritdoc />
+        public override void Dispose() {
+            ConsoleLogger?.Dispose();
+            base.Dispose();
         }
     }
 }

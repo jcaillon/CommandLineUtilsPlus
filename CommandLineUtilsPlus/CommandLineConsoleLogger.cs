@@ -50,10 +50,18 @@ namespace CommandLineUtilsPlus {
         /// <inheritdoc />
         public override IConsoleLogger If(bool condition) => condition ? this : null;
 
+        /// <summary>
+        /// Is this already disposed?
+        /// </summary>
+        public bool Disposed { get; private set; }
+
         /// <inheritdoc />
         public override void Dispose() {
-            base.Dispose();
-            FlushLogToFile();
+            if (!Disposed) {
+                base.Dispose();
+                FlushLogToFile();
+                Disposed = true;
+            }
         }
 
         /// <inheritdoc cref="IConsoleLogger.ReportProgress"/>
