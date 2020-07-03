@@ -60,13 +60,14 @@ namespace CommandLineUtilsPlus {
         /// <param name="args"></param>
         /// <param name="logger"></param>
         /// <param name="helper"></param>
+        /// <param name="appGenerator"></param>
         /// <returns></returns>
-        public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleWriter, ICommandLineHelpGenerator> helper = null) {
+        public static int ExecuteCommand(string[] args, Func<IConsoleInterface, ICommandLineConsoleLogger> logger = null, Func<IConsoleWriter, ICommandLineHelpGenerator> helper = null, Func<IConsole, ICommandLineConsoleLogger, ICommandLineHelpGenerator, CommandLineApplicationPlus<TModel>> appGenerator = null) {
             var console = new CommandLineConsoleInterface();
             var consoleLogger = logger?.Invoke(console) ?? new CommandLineConsoleLogger(console);
             var helpGenerator = helper?.Invoke(consoleLogger) ?? new CommandLineHelpGenerator(consoleLogger);
             try {
-                using (var app = new CommandLineApplicationPlus<TModel>(helpGenerator, console, consoleLogger, Directory.GetCurrentDirectory())) {
+                using (var app = appGenerator?.Invoke(console, consoleLogger, helpGenerator) ?? new CommandLineApplicationPlus<TModel>(helpGenerator, console, consoleLogger, Directory.GetCurrentDirectory())) {
                     return app.ExecuteCommandInternal(args);
                 }
             } catch (Exception ex) {
