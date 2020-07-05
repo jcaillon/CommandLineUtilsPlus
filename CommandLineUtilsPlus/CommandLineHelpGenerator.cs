@@ -152,13 +152,13 @@ namespace CommandLineUtilsPlus {
 
             GenerateUsage(fullCommandLine, arguments, options, commands, commandType?.GetProperty("RemainingArgs"));
             GenerateArguments(arguments, firstColumnWidth);
-            var hasHighlightedLetters = GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
-            hasHighlightedLetters = hasHighlightedLetters || GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, !options.All(o => o.Inherited));
+            var hasHighlightedLettersInOptions = GenerateOptions(options.Where(o => !o.Inherited).ToList(), firstColumnWidth, false);
+            var hasHighlightedLettersInInheritedOptions = GenerateOptions(options.Where(o => o.Inherited).ToList(), firstColumnWidth, !options.All(o => o.Inherited));
 
             if (options.Any()) {
                 WriteOnNewLine(null);
                 WriteTip($"Tip: you can set any option --opt using an environment var named {application.GetRootCommandLineApplication()?.Name?.ToUpper()}_OPT.");
-                if (hasHighlightedLetters) {
+                if (hasHighlightedLettersInOptions || hasHighlightedLettersInInheritedOptions) {
                     WriteTip($"Tip: use the highlighted letters as a short alias for an option.");
                 }
             }
