@@ -30,6 +30,7 @@ namespace CommandLineUtilsPlus.Demo.Command {
     )]
     [Subcommand(typeof(CompleteManCommand))]
     [Subcommand(typeof(MyMarkdownManCommand))]
+    [Subcommand(typeof(ManCommandCommand))]
     [CommandAdditionalHelpText(nameof(WriteToolUsage))]
     public class MyManCommand : ManCommand {
 
@@ -65,5 +66,11 @@ namespace CommandLineUtilsPlus.Demo.Command {
         }
     }
 
-
+    [Command(
+        "command", "cm", "cmd",
+        Description = "Manual for the commands of this tool."
+    )]
+    [Subcommand(typeof(ManCommandListCommand))]
+    internal class ManCommandCommand : ADemoParentCommand {
+    }
 }

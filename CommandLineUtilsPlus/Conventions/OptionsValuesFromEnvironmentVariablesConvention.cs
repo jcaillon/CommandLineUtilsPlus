@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using CommandLineUtilsPlus.Extension;
+using CommandLineUtilsPlus.Utilities;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Conventions;
 using McMaster.Extensions.CommandLineUtils.Validation;

@@ -157,7 +157,7 @@ namespace CommandLineUtilsPlus {
 
             if (options.Any()) {
                 WriteOnNewLine(null);
-                WriteTip($"Tip: you can set an option --opt using an environment var named {application.GetRootCommandLineApplication()?.Name?.ToUpper()}_OPT.");
+                WriteTip($"Tip: you can set any option --opt using an environment var named {application.GetRootCommandLineApplication()?.Name?.ToUpper()}_OPT.");
                 if (hasHighlightedLetters) {
                     WriteTip($"Tip: use the highlighted letters as a short alias for an option.");
                 }

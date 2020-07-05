@@ -24,6 +24,7 @@ using System;
 using System.IO;
 using System.Text;
 using CommandLineUtilsPlus.Console;
+using CommandLineUtilsPlus.Utilities;
 
 namespace CommandLineUtilsPlus {
     /// <summary>

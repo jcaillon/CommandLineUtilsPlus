@@ -26,7 +26,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace CommandLineUtilsPlus {
+namespace CommandLineUtilsPlus.Utilities {
     internal static class StaticUtilities {
 #if !WINDOWSONLYBUILD
         private static bool? _isRuntimeWindowsPlatform;

@@ -35,6 +35,9 @@ namespace CommandLineUtilsPlus.Demo.Command {
     [Subcommand(typeof(ShowVersionCommand))]
     [Subcommand(typeof(SelfTestCommand))]
     [Subcommand(typeof(MyManCommand))]
+#if !WINDOWSONLYBUILD && !SELFCONTAINEDWITHEXE
+    [Subcommand(typeof(MyACreateStarterCommand))]
+#endif
     [CommandAdditionalHelpText(nameof(GetAdditionalHelpText))]
     public class MainCommand : AParentCommand {
         public static void GetAdditionalHelpText(IHelpWriter writer, CommandLineApplication application, int firstColumnWidth) {

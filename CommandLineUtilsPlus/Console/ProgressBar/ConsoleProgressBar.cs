@@ -22,6 +22,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Timers;
+using CommandLineUtilsPlus.Utilities;
 
 namespace CommandLineUtilsPlus.Console.ProgressBar {
 

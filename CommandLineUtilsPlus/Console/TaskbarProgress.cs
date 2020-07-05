@@ -20,6 +20,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using CommandLineUtilsPlus.Utilities;
 
 namespace CommandLineUtilsPlus.Console {
 

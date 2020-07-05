@@ -20,6 +20,7 @@
 
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Extension;
+using CommandLineUtilsPlus.Utilities;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace CommandLineUtilsPlus.Command {
