@@ -52,7 +52,7 @@ namespace CommandLineUtilsPlus.Command {
             formatter.Write(@"ion` can also be written as `");
             formatter.Write("-opt", ConsoleColor.Green);
             formatter.Write($@"` (mind the highlighted letters).");
-            formatter.WriteOnNewLine(@"  - Every single option can also be passed to this tool using an environment variable; the variable should be named like the option (in capital letters) and prefixed by `{app.GetRootCommandLineApplication().Name?.ToUpper()}_`.
+            formatter.WriteOnNewLine($@"  - Every single option can also be passed to this tool using an environment variable; the variable should be named like the option (in capital letters) and prefixed by `{app.GetRootCommandLineApplication().Name?.ToUpper()}_`.
     For instance, you can pass the value of the option named `--myoption` through an environment variable named `{app.GetRootCommandLineApplication().Name?.ToUpper()}_MYOPTION`.
   - You can escape white spaces in argument/option values by using double quotes (i.e. ""my value"").
   - If you need to use a double quote within a double quote, you can do so by double quoting the double quotes (i.e. ""my """"special"""" value"").
