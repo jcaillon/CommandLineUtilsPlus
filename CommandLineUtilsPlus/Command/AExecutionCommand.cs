@@ -198,15 +198,17 @@ namespace CommandLineUtilsPlus.Command {
         /// Called when the options of the command line are not validated correctly.
         /// </summary>
         /// <param name="r"></param>
+        /// <param name="app"></param>
         /// <returns></returns>
         // ReSharper disable once UnusedMember.Global
-        public virtual int OnValidationError(ValidationResult r) {
+        public virtual int OnValidationError(ValidationResult r, CommandLineApplication app) {
             // log stuff that might have happened during option parsing (set option from environment variable).
             foreach (var logLine in DebugLogFromSetOptionValueFromEnvironmentVariable) {
-                Log?.Info(logLine);
+                Log.Info(logLine);
             }
             var faultyMembers = string.Join(", ", r.MemberNames);
-            Log.Error($"{(faultyMembers.Length > 0 ? $"{faultyMembers} : ": "")}{r.ErrorMessage}");
+            Log.Error($"{(faultyMembers.Length > 0 ? $"Validation error for {faultyMembers}: ": "")}{r.ErrorMessage}");
+            Log.Info($"Usage: {(app.HelpTextGenerator as CommandLineHelpGenerator)?.GenerateUsageString(app)}");
             Log.Info($"Specify --{HelpLongName} for a list of available options and commands.");
             Log.Fatal($"Exit code {FatalExitCode}");
             Out.WriteOnNewLine(null);

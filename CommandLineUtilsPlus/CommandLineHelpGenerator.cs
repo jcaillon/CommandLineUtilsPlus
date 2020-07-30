@@ -24,6 +24,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using CommandLineUtilsPlus.Command;
 using CommandLineUtilsPlus.Console;
 using CommandLineUtilsPlus.Extension;
@@ -243,6 +244,37 @@ namespace CommandLineUtilsPlus {
                     Write(" [-- <arg>...]");
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Generate the line that shows usage
+        /// </summary>
+        public virtual string GenerateUsageString(CommandLineApplication application) {
+            var arguments = application.Arguments.Where(a => a.ShowInHelpText).ToList();
+            var options = application.GetOptions().Where(o => o.ShowInHelpText).ToList();
+            var commands = application.Commands.Where(c => c.ShowInHelpText).ToList();
+            var fullCommandLine = application.GetFullCommandLine();
+            var commandType = application.GetTypeFromCommandLineApp();
+            var remainingArgs = commandType?.GetProperty("RemainingArgs");
+            var output = new StringBuilder(fullCommandLine);
+            if (options.Any()) {
+                output.Append(" [options]");
+            }
+            foreach (var argument in arguments) {
+                output.Append($" {(argument.Name?.IndexOf('<') < 0 ? $"<{argument.Name}>" : argument.Name)}");
+            }
+            if (commands.Any()) {
+                output.Append(" [command]");
+            }
+            if (remainingArgs != null) {
+                if (Attribute.GetCustomAttribute(remainingArgs, typeof(DescriptionAttribute), true) is DescriptionAttribute description) {
+                    output.Append($" {description.Description}");
+                } else {
+                    output.Append(" [-- <arg>...]");
+                }
+            }
+            return output.ToString();
         }
 
         /// <summary>

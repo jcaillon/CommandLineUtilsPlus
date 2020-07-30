@@ -1,3 +1,3 @@
-## Issues
+## Improvements
 
-- Fixed an issue where inherited options were not displayed.
+- Better messages on validation error.

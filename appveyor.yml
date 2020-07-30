@@ -81,9 +81,9 @@ before_deploy:
 deploy:
   - provider: NuGet
     # generate at https://www.nuget.org/account/apikeys
-    # encrypt at https://ci.appveyor.com/tools/encrypt
+    # encrypt at https://ci.appveyor.com/tools/encrypt    
     api_key:
-      secure: 9qtk8/Z4Se2QTvv/6BD/0n4T2qeazzY/a7X5iiBG4aGXxFdijRprOjQ6t4D/3tE0
+      secure: NqjA0ihV7pZ+7wPkanXANBKKtOq/+eUrtuJDO9hrR5p6f+2yPpHCBF/A7tcFftN1
     artifact: nupkg
     on:
       APPVEYOR_REPO_TAG: true
