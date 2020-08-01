@@ -24,7 +24,7 @@ skip_commits:
 max_jobs: 1
 
 # Build worker image (VM template)
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 # fetch repository as zip archive
 shallow_clone: false                 # default is "false"
@@ -71,6 +71,10 @@ artifacts:
   - path: '**\*.nupkg'
     name: nupkg
 
+  # pushing all *.snupkg files in build directory recursively
+  - path: '**\*.snupkg'
+    name: snupkg
+
 #---------------------------------#
 #     deployment configuration    #
 #---------------------------------#
@@ -81,10 +85,10 @@ before_deploy:
 deploy:
   - provider: NuGet
     # generate at https://www.nuget.org/account/apikeys
-    # encrypt at https://ci.appveyor.com/tools/encrypt    
+    # encrypt at https://ci.appveyor.com/tools/encrypt   
     api_key:
       secure: NqjA0ihV7pZ+7wPkanXANBKKtOq/+eUrtuJDO9hrR5p6f+2yPpHCBF/A7tcFftN1
-    artifact: nupkg
+    aartifact: /s?nupkg/
     on:
       APPVEYOR_REPO_TAG: true
 

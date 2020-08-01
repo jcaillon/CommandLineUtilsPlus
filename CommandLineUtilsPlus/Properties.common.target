@@ -63,7 +63,8 @@ See more details about this release on github: https://github.com/$(ProjReposito
     <!-- allow pdb to be packed with the the nuget package (instead of having a separate pack for debug symbols) -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeSource>true</IncludeSource>
-    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>    
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Label="Compilation info">
