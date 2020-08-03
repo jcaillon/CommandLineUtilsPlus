@@ -68,7 +68,7 @@ function Publish-NugetPackage {
 	Write-Host "Publishing nuget package"
 	Write-Host "@@@@@@@@@@@@@@@@@@@@@@@"
 
-	iu msbuild "$path" "/verbosity:minimal" "/t:Restore,Pack" "/p:Configuration=Release" "/bl:pack.binlog" "/p:PackageOutputPath=$publishDir" $(If ([string]::IsNullOrEmpty($Version)) { "" } Else { "/p:Version=$Version" })
+	iu dotnet msbuild "$path" "/verbosity:minimal" "/t:Restore,Pack" "/p:Configuration=Release" "/bl:pack.binlog" "/p:PackageOutputPath=$publishDir" $(If ([string]::IsNullOrEmpty($Version)) { "" } Else { "/p:Version=$Version" })
 }
 
 function Test-Exe($exeName) {

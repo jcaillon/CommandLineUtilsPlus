@@ -92,9 +92,9 @@ The command to add this directory to your path is:");
             HelpWriter.WriteOnNewLine(null);
 
             if (StaticUtilities.IsRuntimeWindowsPlatform) {
-                Out.WriteResultOnNewLine("for /f \"usebackq tokens=2,*\" %A in (`reg query HKCU\\Environment /v PATH`) do set my_user_path=%B && SetX Path \"%my_user_path%;" + Path.GetDirectoryName(starterFilePath) + "\"");
+                Out.WriteResultOnNewLine($"for /f \"usebackq tokens=2,*\" %A in (`reg query HKCU\\Environment /v PATH`) do SetX Path \"%B;{Path.GetDirectoryName(starterFilePath)}\"");}
             } else {
-                Out.WriteResultOnNewLine("echo $\"export PATH=\\$PATH:" + Path.GetDirectoryName(starterFilePath) + "\" >> ~/.bashrc && source ~/.bashrc && chmod +x \"" + starterFilePath + "\"");
+                Out.WriteResultOnNewLine($"echo \"export PATH=$PATH:{Path.GetDirectoryName(starterFilePath)}\" >> ~/.bashrc && source ~/.bashrc && chmod +x \"{starterFilePath}\"");
             }
 
             HelpWriter.WriteOnNewLine(null);
